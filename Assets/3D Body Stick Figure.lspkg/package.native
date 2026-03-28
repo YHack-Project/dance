@@ -1,0 +1,37 @@
+- !<NativePackageDescriptor/2884323f-319c-4418-921c-bbce8485ab5a>
+  PackagePath: ""
+  StudioVersion:
+    major: 5
+    minor: 19
+    patch: 2
+    build: 26031623
+    type: Unset
+    buildFlavor: ""
+    timestamp: 0
+    commit: ""
+  Description: This asset allows you to track the position and rotation of joints on the body in 3D. It has a 3D model rigged to a skeleton that matches what the tracker sees. This allows the Lens to map the movement of the body to the movement of the model. Learn more in the 3D Body Assets guide
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  VersionMajor: 1
+  VersionMinor: 0
+  VersionPatch: 0
+  UpdateCheckpoint: 92
+  ExportUid: 5d63af71-6647-479e-8c36-60324bf78048
+  ComponentUid: 777d0621-1dda-4b83-998c-169d9c2e9a95
+  PackagePolicy: CanBeUnpackedTransparent
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  Instantiable: !<reference> 00000000-0000-0000-0000-000000000000
+  AssetLibraryDependencyStructure: !<AssetLibraryDependencyStructure>
+    Name: ""
+    AssetId: ""
+    Hash: ""
+    Version:
+      major: 0
+      minor: 0
+      patch: 0
+      build: 0

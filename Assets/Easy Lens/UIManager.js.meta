@@ -1,0 +1,48 @@
+- !<AssetImportMetadata/72ad5ed4-5e89-4de4-8622-f23cd555ec5f>
+  ImportedAssetIds:
+    JavaScriptAsset: !<reference> c51f249c-5f13-4b69-851b-d1aba470aad1
+  ImporterName: JavaScriptAssetImporter
+  PrimaryAsset: !<reference> c51f249c-5f13-4b69-851b-d1aba470aad1
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    JavaScriptAsset: !<own> baea1e82-13c3-4ebe-8e0e-4e4e67994518
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<ScriptAssetData/baea1e82-13c3-4ebe-8e0e-4e4e67994518>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: b6c2d9cc-e1a1-45a4-a7fb-0d62f22162fb
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    comboText: false
+    promptText: false
+    ratingText: false
+    scoreText: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - scoreText: !<reference.Text> 00000000-0000-0000-0000-000000000000
+      ratingText: !<reference.Text> 00000000-0000-0000-0000-000000000000
+      promptText: !<reference.Text> 00000000-0000-0000-0000-000000000000
+      comboText: !<reference.Text> 00000000-0000-0000-0000-000000000000
+  ScriptTypes:
+    -
+      {}

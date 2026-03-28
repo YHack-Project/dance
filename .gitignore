@@ -1,4 +1,7 @@
 # Shipped by Lens Studio
+.claude/
+.mcp.json
+.mcp.json.meta
 
 # The lines below are automatically generated and updated by Lens Studio.
 # Please do not modify them manually, as changes will be overwritten each time!

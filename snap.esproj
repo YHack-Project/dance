@@ -13,7 +13,7 @@ metaInfo:
     []
   tags:
     []
-  lensName: Stick Move Guide
+  lensName: Mood Label Live
   lensDescriptors:
     []
   lensApplicableContext:
@@ -27,7 +27,7 @@ metaInfo:
     - Mobile
     - Web
   platformBundlesEnabled: false
-  iconHash: 21883ffe31c3840e6051dbf81ed0cab3
+  iconHash: d1f877e9d4c5c0f1ad195868742d0870
   videoPreviewHash: ""
   fromTemplateName: Default
   fromTemplateUrl: Lens Studio 5.19.2.26031623
@@ -45,7 +45,7 @@ metaInfo:
     minor: 0
     patch: 0
     build: 0
-  documentId: bfd27948-1796-4a17-b76a-28aa9ac08068
+  documentId: f3d524c5-ac07-44a7-b03a-e07d591396ec
   originalDocumentId: f3d524c5-ac07-44a7-b03a-e07d591396ec
   packageId: ""
   packageVersion: ""

@@ -1,0 +1,48 @@
+- !<AssetImportMetadata/aa650ae9-3773-4003-b0a2-4d953d6aba80>
+  ImportedAssetIds:
+    JavaScriptAsset: !<reference> 2404bc48-7dc0-44c5-8b5c-33858bb2e7e8
+  ImporterName: JavaScriptAssetImporter
+  PrimaryAsset: !<reference> 2404bc48-7dc0-44c5-8b5c-33858bb2e7e8
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    JavaScriptAsset: !<own> 7d60cbef-9bb2-4b46-8177-10e70aadb5a4
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<ScriptAssetData/7d60cbef-9bb2-4b46-8177-10e70aadb5a4>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: 2c0bdfab-01d3-4e14-9baf-3432985f5684
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    choreographyManager: false
+    guideAvatar: false
+    scoringEngine: false
+    uiManager: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - choreographyManager: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
+      scoringEngine: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
+      uiManager: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
+      guideAvatar: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+  ScriptTypes:
+    -
+      {}
