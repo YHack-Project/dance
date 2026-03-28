@@ -1,0 +1,68 @@
+- !<AssetImportMetadata/3baedcc8-ac53-61d9-1f8a-6e4d9223ca50>
+  ImportedAssetIds:
+    JavaScriptAsset: !<reference> ed422abe-3f28-4899-b593-ede6924c8ef8
+  ImporterName: JavaScriptAssetImporter
+  PrimaryAsset: !<reference> ed422abe-3f28-4899-b593-ede6924c8ef8
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    JavaScriptAsset: !<own> 2fc91bb0-0a2a-4bf1-b9a0-3f8cbc1df929
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<ScriptAssetData/2fc91bb0-0a2a-4bf1-b9a0-3f8cbc1df929>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: e7ca1ae7-ca9f-4cd7-af6f-5bce02b8410d
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    addSecondaryHint: false
+    advanced: false
+    customText: false
+    hint: false
+    hintLogo: false
+    hintLogoImage: false
+    hintRenderZone: false
+    hintText: false
+    magnifying: false
+    magnifyingGlassPivot: false
+    secondaryHintLogo: false
+    secondaryText: false
+    useMagnifying: false
+    useMagnifying1: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - hintLogo: !<reference.Texture> 00000000-0000-0000-0000-000000000000
+      hint: 0
+      customText: ""
+      useMagnifying: false
+      addSecondaryHint: false
+      secondaryHintLogo: !<reference.Texture> 00000000-0000-0000-0000-000000000000
+      secondaryText: ""
+      useMagnifying1: false
+      advanced: false
+      hintText: !<reference.Text> 00000000-0000-0000-0000-000000000000
+      hintRenderZone: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      hintLogoImage: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      magnifyingGlassPivot: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      magnifying: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+  ScriptTypes:
+    -
+      {}

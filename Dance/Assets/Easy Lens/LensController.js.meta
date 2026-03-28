@@ -1,0 +1,50 @@
+- !<AssetImportMetadata/4222b7c5-3b0c-4624-a270-7338e7c0d381>
+  ImportedAssetIds:
+    JavaScriptAsset: !<reference> 935a6a09-a967-4bb0-a5ed-b8b4b398fba4
+  ImporterName: JavaScriptAssetImporter
+  PrimaryAsset: !<reference> 935a6a09-a967-4bb0-a5ed-b8b4b398fba4
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    USE_EASY_LENS: ""
+  AssetDataMap:
+    JavaScriptAsset: !<own> 05aca497-339e-4bcf-9e64-1e48871ad019
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<ScriptAssetData/05aca497-339e-4bcf-9e64-1e48871ad019>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: 8af4e5be-6576-449a-9ea4-cbb3e64a600c
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    canvas_api: false
+    gyroscope: false
+    hand_tracking: false
+    touch_events: false
+    ui_hint_text: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - touch_events: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
+      gyroscope: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
+      ui_hint_text: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
+      canvas_api: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
+      hand_tracking: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
+  ScriptTypes:
+    -
+      {}

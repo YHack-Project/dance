@@ -1,0 +1,40 @@
+- !<NativePackageDescriptor/c5cb2d79-01a5-4c00-98b4-796a13d5c3cf>
+  PackagePath: ""
+  StudioVersion:
+    major: 5
+    minor: 19
+    patch: 2
+    build: 26031623
+    type: Unset
+    buildFlavor: ""
+    timestamp: 0
+    commit: ""
+  Description: |-
+    The Full Body Trigger - Screen Package allows you to trigger different screen effects with touch screen triggers. This asset triggers the Swarm  and Party Hat effects attached to the user's body tracking when user's wrists touch the buttons. Find the Object Tracking - Dance preview to preview the effect.
+    
+    Learn More. https://docs.snap.com/lens-studio/essential-skills/ar-tracking/body/body-templates/full-body-triggers
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  VersionMajor: 1
+  VersionMinor: 0
+  VersionPatch: 0
+  UpdateCheckpoint: 92
+  ExportUid: 38348747-a8a3-42d5-b88f-01a972885933
+  ComponentUid: a69b8c5b-c4ca-48b2-850d-f97975746e91
+  PackagePolicy: CanBeUnpackedTransparent
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  Instantiable: !<reference> 00000000-0000-0000-0000-000000000000
+  AssetLibraryDependencyStructure: !<AssetLibraryDependencyStructure>
+    Name: ""
+    AssetId: ""
+    Hash: ""
+    Version:
+      major: 0
+      minor: 0
+      patch: 0
+      build: 0

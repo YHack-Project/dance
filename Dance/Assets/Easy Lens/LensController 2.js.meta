@@ -1,0 +1,52 @@
+- !<AssetImportMetadata/3adf8ed8-c5b9-4b33-946e-978900d7dc29>
+  ImportedAssetIds:
+    JavaScriptAsset: !<reference> 01d08b2d-6a6d-470b-9500-70a612120b20
+  ImporterName: JavaScriptAssetImporter
+  PrimaryAsset: !<reference> 01d08b2d-6a6d-470b-9500-70a612120b20
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    USE_EASY_LENS: ""
+  AssetDataMap:
+    JavaScriptAsset: !<own> f80fdf4d-cc18-45d1-a40a-03be00e01025
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<ScriptAssetData/f80fdf4d-cc18-45d1-a40a-03be00e01025>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: f76786d8-d826-47b6-84d5-93210c0db530
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    canvas_api: false
+    face_landmarks: false
+    gyroscope: false
+    hand_tracking: false
+    touch_events: false
+    ui_hint_text: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - canvas_api: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
+      touch_events: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
+      hand_tracking: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
+      gyroscope: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
+      ui_hint_text: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
+      face_landmarks: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
+  ScriptTypes:
+    -
+      {}
