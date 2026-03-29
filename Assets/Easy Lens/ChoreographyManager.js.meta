@@ -26,6 +26,7 @@
   ExportUid: 00000000-0000-0000-0000-000000000000
   PackagePolicy: CanBeUnpacked
   ScriptInputsHidden:
+    guideLead: false
     guideSkeletonRoot: false
     mediaPickerTexture: false
     playbackSpeed: false
@@ -49,6 +50,7 @@
       videoPersonScope: !<reference.PersonTrackingScope> 00000000-0000-0000-0000-000000000000
       videoPreview: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       playbackSpeed: !<float> 1.000000
+      guideLead: !<float> 0.000000
   ScriptTypes:
     -
       {}

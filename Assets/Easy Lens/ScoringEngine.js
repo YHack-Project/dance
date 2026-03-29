@@ -1,5 +1,6 @@
 // ScoringEngine.js - Real-time Pose Comparison & Scoring
 // Compares user pose to guide pose using quaternion angular distance.
+// Joint weights are scaled by choreography movement between checkpoints.
 
 //@input Component.ScriptComponent choreographyManager
 //@input Component.ScriptComponent bodyTracker
@@ -13,26 +14,21 @@ var JOINT_NAMES = [
     "RightUpLeg", "RightLeg", "RightFoot"
 ];
 
-// Higher weight = more important for scoring
+// Base weights — flattened so the movement multiplier has more influence
 var JOINT_WEIGHTS = {
     "Hips": 0.5, "Spine": 0.5, "Spine1": 0.3, "Spine2": 0.3,
     "Neck": 0.2, "Head": 0.2,
-    "LeftShoulder": 0.5, "LeftArm": 1.5, "LeftForearm": 1.2, "LeftHand": 0.8,
-    "RightShoulder": 0.5, "RightArm": 1.5, "RightForearm": 1.2, "RightHand": 0.8,
-    "LeftUpLeg": 1.0, "LeftLeg": 1.2, "LeftFoot": 0.5,
-    "RightUpLeg": 1.0, "RightLeg": 1.2, "RightFoot": 0.5
+    "LeftShoulder": 0.4, "LeftArm": 1.2, "LeftForearm": 1.0, "LeftHand": 0.6,
+    "RightShoulder": 0.4, "RightArm": 1.2, "RightForearm": 1.0, "RightHand": 0.6,
+    "LeftUpLeg": 0.8, "LeftLeg": 1.0, "LeftFoot": 0.4,
+    "RightUpLeg": 0.8, "RightLeg": 1.0, "RightFoot": 0.4
 };
 
 // Rating thresholds (applied to angular-distance-based score)
-// These are tuned so that:
-//   Perfect: average <25 degrees off target
-//   Good: average <50 degrees off target
-//   Miss: >50 degrees off
 var PERFECT_THRESHOLD = 0.97;
 var GOOD_THRESHOLD = 0.90;
 
 // Minimum quaternion dot product vs identity to consider a joint "active"
-// Joints near identity in the choreography are skipped (no target pose)
 var ACTIVE_JOINT_THRESHOLD = 0.995;
 
 // Scoring
@@ -40,6 +36,7 @@ var totalScore = 0;
 var combo = 0;
 var lastCheckpointIndex = -1;
 var frameScoreSmooth = 0;
+var lastCheckpointRotations = null;
 
 // Compare two quaternions - returns 0 to 1 (1 = identical)
 function quatSimilarity(a, b) {
@@ -48,16 +45,29 @@ function quatSimilarity(a, b) {
     return Math.min(1.0, dot);
 }
 
+// Angular distance between two quaternions in degrees
+function quatAngularDistance(a, b) {
+    var dot = Math.abs(a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w);
+    dot = Math.min(1.0, dot);
+    return 2.0 * Math.acos(dot) * (180.0 / Math.PI);
+}
+
+// Map choreography movement (degrees) to a 0.5x–2.0x weight multiplier
+function movementMultiplier(angleDeg) {
+    if (angleDeg <= 5) return 0.5;
+    if (angleDeg <= 30) return 0.5 + 0.5 * ((angleDeg - 5) / 25);
+    if (angleDeg <= 90) return 1.0 + 1.0 * ((angleDeg - 30) / 60);
+    return 2.0;
+}
+
 // Check if a quaternion is near identity (no meaningful rotation)
 function isNearIdentity(q) {
-    // Identity quaternion is (0, 0, 0, 1)
-    // dot with identity = |q.w|
     return Math.abs(q.w) > ACTIVE_JOINT_THRESHOLD;
 }
 
-// Get weighted average similarity across ACTIVE joints only
-// Active = joints that have meaningful choreography rotation (not resting)
-function computePoseSimilarity(userPose, guidePose) {
+// Get weighted average similarity across ACTIVE joints
+// prevGuidePose: guide rotations at the previous checkpoint (null for first checkpoint)
+function computePoseSimilarity(userPose, guidePose, prevGuidePose) {
     if (!userPose || !guidePose) return 0;
 
     var totalWeight = 0;
@@ -68,9 +78,14 @@ function computePoseSimilarity(userPose, guidePose) {
         var weight = JOINT_WEIGHTS[name] || 1.0;
 
         if (userPose[name] && guidePose[name]) {
-            // Skip joints with no active choreography target
             if (isNearIdentity(guidePose[name])) {
                 continue;
+            }
+
+            // Scale weight by how much this joint moved in the choreography
+            if (prevGuidePose && prevGuidePose[name]) {
+                var delta = quatAngularDistance(prevGuidePose[name], guidePose[name]);
+                weight *= movementMultiplier(delta);
             }
 
             var sim = quatSimilarity(userPose[name], guidePose[name]);
@@ -79,7 +94,6 @@ function computePoseSimilarity(userPose, guidePose) {
         }
     }
 
-    // If no joints are actively choreographed right now, return neutral
     if (totalWeight === 0) return 0.95;
 
     return weightedScore / totalWeight;
@@ -105,6 +119,7 @@ script.reset = function () {
     combo = 0;
     lastCheckpointIndex = -1;
     frameScoreSmooth = 0;
+    lastCheckpointRotations = null;
 };
 
 script.getFinalScore = function () {
@@ -116,10 +131,9 @@ script.update = function () {
     var guideRotations = script.choreographyManager.getCurrentRotations();
     var currentTime = script.choreographyManager.getTime();
 
-    // Compute continuous similarity (only active joints)
-    var similarity = computePoseSimilarity(userPose, guideRotations);
+    // Compute continuous similarity with movement-weighted joints
+    var similarity = computePoseSimilarity(userPose, guideRotations, lastCheckpointRotations);
 
-    // Faster-responding smoothing so score reflects current pose quickly
     frameScoreSmooth = frameScoreSmooth * 0.5 + similarity * 0.5;
 
     // Check for checkpoint scoring
@@ -127,7 +141,6 @@ script.update = function () {
     for (var i = 0; i < checkpoints.length; i++) {
         if (i <= lastCheckpointIndex) continue;
 
-        // Check if we've passed this checkpoint (within 0.3s window)
         if (currentTime >= checkpoints[i] - 0.15 && currentTime <= checkpoints[i] + 0.15) {
             lastCheckpointIndex = i;
 
@@ -144,6 +157,9 @@ script.update = function () {
             }
 
             totalScore += points;
+
+            // Save guide rotations for next checkpoint's movement comparison
+            lastCheckpointRotations = guideRotations;
 
             // Update UI
             if (script.uiManager) {

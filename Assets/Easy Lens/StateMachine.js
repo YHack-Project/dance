@@ -22,6 +22,7 @@ var danceDuration = 0.0;
 var videoLoadTimeout = 60.0;
 var videoLoadTimer = 0.0;
 var savedTrackingAsset = null; // saved OT3D asset to restore after dance
+var videoStartedEarly = false;
 
 script.getState = function () {
     return currentState;
@@ -58,13 +59,8 @@ function enterState(newState) {
             danceTimer = 0.0;
             danceDuration = script.choreographyManager.getDuration();
             print("StateMachine: DANCING - duration=" + danceDuration.toFixed(1) + "s, videoMode=" + script.choreographyManager.isVideoMode());
-            // Fully disconnect guide OT3D so its native tracking pipeline
-            // can't overwrite our choreography rotations (critical on mobile)
-            if (script.guideOT3D) {
-                savedTrackingAsset = script.guideOT3D.trackingAsset;
-                script.guideOT3D.trackingAsset = null;
-                script.guideOT3D.enabled = false;
-            }
+            // Keep guide OT3D enabled so it follows user position.
+            // ChoreographyManager's LateUpdate overrides rotations with choreography.
             script.choreographyManager.startPlayback();
             script.scoringEngine.reset();
             script.uiManager.showDancing();
@@ -72,11 +68,6 @@ function enterState(newState) {
 
         case State.RESULTS:
             script.choreographyManager.stopPlayback();
-            // Re-enable guide OT3D for next round
-            if (script.guideOT3D) {
-                if (savedTrackingAsset) script.guideOT3D.trackingAsset = savedTrackingAsset;
-                script.guideOT3D.enabled = true;
-            }
             var finalScore = script.scoringEngine.getFinalScore();
             script.uiManager.showResults(finalScore);
             break;
@@ -87,6 +78,7 @@ function enterState(newState) {
 var tapEvent = script.createEvent("TapEvent");
 tapEvent.bind(function () {
     if (currentState === State.IDLE || currentState === State.RESULTS) {
+        videoStartedEarly = false;
         script.choreographyManager.resetToKeyframeMode();
         script.choreographyManager.initVideoMode();
         enterState(State.VIDEO_LOADING);
@@ -130,6 +122,11 @@ updateEvent.bind(function (eventData) {
             var display = Math.ceil(countdownTimer);
             if (display < 1) display = 1;
             script.uiManager.showCountdown(display);
+            // Start video 0.5s before dance so user sees it as reference
+            if (countdownTimer <= 0.5 && !videoStartedEarly) {
+                videoStartedEarly = true;
+                script.choreographyManager.startVideoPreview();
+            }
             if (countdownTimer <= 0) {
                 enterState(State.DANCING);
             }

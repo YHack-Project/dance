@@ -3000,6 +3000,7 @@
   ScriptAsset: !<reference> 10ce9a5b-32d7-4475-92b6-7728b833b5fa
   ScriptInputsDefault:
     playbackSpeed: true
+    guideLead: true
   ScriptTypesDefault:
     {}
   ScriptInputs:
@@ -3011,6 +3012,7 @@
       videoPersonScope: !<reference.PersonTrackingScope> b0928a51-2664-45da-bd98-26114739d1f7
       videoPreview: !<reference.SceneObject> d3b82490-7e56-4d7b-b591-1202b4c00bd4
       playbackSpeed: !<float> 1.000000
+      guideLead: !<float> 0.000000
   ScriptTypes:
     "":
       {}
@@ -3226,8 +3228,8 @@
   RawMode: true
   ForceBasic: true
   Anchor:
-    left: 0.400000
-    bottom: 0.400000
+    left: -0.100000
+    bottom: -0.100000
     right: 1.000000
     top: 1.000000
   Offset:

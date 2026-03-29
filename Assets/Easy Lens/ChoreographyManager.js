@@ -10,6 +10,7 @@
 //@input Asset.PersonTrackingScope videoPersonScope {"label": "Video Person Scope"}
 //@input SceneObject videoPreview {"label": "Video Preview Screen Image"}
 //@input float playbackSpeed = 1.0 {"label": "Playback Speed", "widget": "slider", "min": 0.25, "max": 1.5, "step": 0.25}
+//@input float guideLead = 0.0 {"label": "Guide Lead Time (s)", "widget": "slider", "min": 0.0, "max": 2.0, "step": 0.1}
 
 var JOINT_NAMES = [
     "Hips", "Spine", "Spine1", "Spine2", "Neck", "Head",
@@ -48,6 +49,9 @@ var videoOT3D = null; // cached reference to Video Skeleton's ObjectTracking3D
 
 // Recording failure flag
 var recordingFailed = false;
+
+// Video preview state
+var videoPreviewStarted = false;
 
 
 // ============================================================
@@ -298,6 +302,7 @@ script.resetToKeyframeMode = function () {
     recordingFailed = false;
     videoPicked = false;
     expectingPick = false;
+    videoPreviewStarted = false;
     if (script.videoPreview) script.videoPreview.enabled = false;
 };
 
@@ -314,6 +319,37 @@ script.getCheckpoints = function () {
     return DANCE.checkpoints;
 };
 
+// Start video playback and show preview (called early during countdown)
+function startVideoPreview() {
+    if (videoPreviewStarted) return;
+    if (!videoMode || !script.mediaPickerTexture) return;
+    videoPreviewStarted = true;
+
+    try {
+        var vc = script.mediaPickerTexture.control.videoControl;
+        if (vc) {
+            vc.volume = 1;
+            vc.play(-1);
+            vc.seek(0);
+            print("CHOREO: Video preview started, duration=" + (vc.duration || 0).toFixed(1) + "s");
+        }
+    } catch (e) {
+        print("CHOREO: Video preview error: " + e);
+    }
+
+    if (script.videoPreview) {
+        script.videoPreview.enabled = true;
+        var img = script.videoPreview.getComponent("Component.Image");
+        if (img && img.mainPass) {
+            img.mainPass.baseTex = script.mediaPickerTexture;
+        }
+    }
+}
+
+script.startVideoPreview = function () {
+    startVideoPreview();
+};
+
 script.startPlayback = function () {
     playing = true;
     currentTime = 0.0;
@@ -323,36 +359,9 @@ script.startPlayback = function () {
           ", checkpoints=" + dance.checkpoints.length +
           ", videoMode=" + videoMode);
     if (videoMode && script.mediaPickerTexture) {
-        // Replay video in sync — pause, seek to start, then play
-        try {
-            var vc = script.mediaPickerTexture.control.videoControl;
-            if (vc) {
-                try { vc.pause(); } catch (e2) {}
-                vc.seek(0);
-                vc.play(script.playbackSpeed);
-                print("CHOREO: Video replay started at " + script.playbackSpeed + "x, duration=" + (vc.duration || 0).toFixed(1) + "s");
-            } else {
-                print("CHOREO: WARNING - no videoControl for replay");
-            }
-        } catch (e) {
-            print("CHOREO: Video replay error: " + e);
-        }
-        // Show video preview
-        if (script.videoPreview) {
-            script.videoPreview.enabled = true;
-            var img = script.videoPreview.getComponent("Component.Image");
-            if (img) {
-                if (img.mainPass) {
-                    img.mainPass.baseTex = script.mediaPickerTexture;
-                    print("CHOREO: Video preview texture assigned");
-                } else {
-                    print("CHOREO: WARNING - Image component has no mainPass");
-                }
-            } else {
-                print("CHOREO: WARNING - Video Preview has no Image component");
-            }
-        } else {
-            print("CHOREO: WARNING - videoPreview input not set");
+        // Start video if not already playing from early start
+        if (!videoPreviewStarted) {
+            startVideoPreview();
         }
     }
 };
@@ -370,20 +379,22 @@ script.stopPlayback = function () {
 
 script.getTime = function () { return currentTime; };
 
-script.getCurrentRotations = function () {
+script.getCurrentRotations = function (atTime) {
     var dance = (videoMode && activeDance) ? activeDance : DANCE;
     if (dance.poses.length === 0) return null;
+
+    var t = (atTime != null) ? atTime : currentTime;
 
     var poseA = dance.poses[0];
     var poseB = dance.poses[0];
     var blend = 0.0;
 
     for (var i = 0; i < dance.poses.length - 1; i++) {
-        if (currentTime >= dance.poses[i].time && currentTime <= dance.poses[i + 1].time) {
+        if (t >= dance.poses[i].time && t <= dance.poses[i + 1].time) {
             poseA = dance.poses[i];
             poseB = dance.poses[i + 1];
             var span = poseB.time - poseA.time;
-            blend = span > 0 ? (currentTime - poseA.time) / span : 0;
+            blend = span > 0 ? (t - poseA.time) / span : 0;
             break;
         }
     }
@@ -408,8 +419,9 @@ script.update = function (dt) {
     var duration = script.getDuration();
     if (currentTime > duration) currentTime = duration;
 
-    // Compute rotations now, apply in LateUpdate so they aren't overwritten by OT3D
-    pendingRotations = script.getCurrentRotations();
+    // Guide shows poses ahead of scoring time so the user can see what's coming
+    var guideTime = Math.min(currentTime + script.guideLead, duration);
+    pendingRotations = script.getCurrentRotations(guideTime);
 };
 
 // ============================================================
@@ -469,4 +481,5 @@ lateUpdate.bind(function () {
             }
         }
     }
+
 });
