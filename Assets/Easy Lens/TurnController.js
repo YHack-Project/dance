@@ -44,7 +44,8 @@ script.sendChallenge = function () {
 
     var challengeData = {
         score: finalScore,
-        dance: danceData
+        dance: danceData,
+        videoDuration: script.choreographyManager.getDuration()
     };
 
     // Save as global variable (persists across turns)
@@ -105,9 +106,10 @@ async function loadChallenge() {
         }
 
         isChallenge = true;
-        print("TURN: Challenge loaded! Opponent score=" + opponentScore);
+        var origDuration = challengeData.videoDuration || 0;
+        print("TURN: Challenge loaded! Opponent score=" + opponentScore + ", videoDuration=" + origDuration);
 
-        script.stateMachine.startChallenge(opponentScore);
+        script.stateMachine.startChallengeUpload(opponentScore, origDuration);
 
     } catch (e) {
         print("TURN: Error loading challenge: " + e + " — falling back to solo");

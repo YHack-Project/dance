@@ -346,6 +346,56 @@ function startVideoPreview() {
     }
 }
 
+// Set up video for preview only (Player 2 challenge mode).
+// Opens media picker but does NOT extract poses — uses already-imported dance.
+script.initVideoPreviewOnly = function () {
+    if (!script.mediaPickerTexture) return;
+
+    var provider = script.mediaPickerTexture.control;
+    provider.isVideoPickingEnabled = true;
+    provider.isImagePickingEnabled = false;
+    provider.isFaceImagePickingEnabled = false;
+
+    videoPreviewStarted = false;
+    videoPicked = false;
+    expectingPick = false;
+
+    if (!callbacksInitialized) {
+        callbacksInitialized = true;
+        provider.setFilePickedCallback(function () {
+            if (!expectingPick) return;
+            expectingPick = false;
+            provider.hideMediaPicker();
+            videoPicked = true;
+            print("CHOREO: Preview-only video picked");
+        });
+    }
+
+    var pickerDelay = script.createEvent("DelayedCallbackEvent");
+    pickerDelay.bind(function () {
+        provider.showMediaPicker();
+        var armDelay = script.createEvent("DelayedCallbackEvent");
+        armDelay.bind(function () {
+            expectingPick = true;
+        });
+        armDelay.reset(0.3);
+    });
+    pickerDelay.reset(0.5);
+};
+
+// Check if a video has been picked (for preview-only mode)
+script.isVideoPicked = function () { return videoPicked; };
+script.clearVideoPicked = function () { videoPicked = false; };
+
+// Get the picked video's duration (for soft lock validation)
+script.getPickedVideoDuration = function () {
+    try {
+        var vc = script.mediaPickerTexture.control.videoControl;
+        if (vc && vc.duration > 0) return vc.duration;
+    } catch (e) {}
+    return 0;
+};
+
 script.startVideoPreview = function () {
     startVideoPreview();
 };

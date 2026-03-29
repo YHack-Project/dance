@@ -15,7 +15,8 @@ var State = {
     RESULTS: 3,
     VIDEO_LOADING: 4,
     CHALLENGE_PROMPT: 5,
-    WAITING: 6
+    WAITING: 6,
+    CHALLENGE_UPLOAD: 7
 };
 
 var currentState = State.IDLE;
@@ -31,6 +32,8 @@ var challengeOpponentScore = 0;
 var challengePromptTimer = 0;
 var resultsPhase = 0;          // 0 = showing score, 1 = showing "challenge?" prompt
 var waitingTimer = 0;
+var challengeVideoDuration = 0; // original video duration for soft lock
+var DURATION_TOLERANCE = 3.0;   // ±3 seconds
 
 script.getState = function () {
     return currentState;
@@ -98,8 +101,13 @@ function enterState(newState) {
             break;
 
         case State.WAITING:
-            waitingTimer = 5.0;
+            waitingTimer = 15.0;
             script.uiManager.showWaiting();
+            break;
+
+        case State.CHALLENGE_UPLOAD:
+            script.uiManager.showChallengeUpload();
+            script.choreographyManager.initVideoPreviewOnly();
             break;
     }
 }
@@ -109,7 +117,15 @@ script.startSolo = function () {
     enterState(State.IDLE);
 };
 
-// Called by TurnController when a challenge is received
+// Called by TurnController when a challenge is received — prompt Player 2 to upload video
+script.startChallengeUpload = function (oppScore, origDuration) {
+    challengeMode = true;
+    challengeOpponentScore = oppScore;
+    challengeVideoDuration = origDuration;
+    enterState(State.CHALLENGE_UPLOAD);
+};
+
+// Legacy — direct challenge start (skips video upload)
 script.startChallenge = function (oppScore) {
     challengeMode = true;
     challengeOpponentScore = oppScore;
@@ -215,6 +231,36 @@ updateEvent.bind(function (eventData) {
             if (waitingTimer <= 0) {
                 print("StateMachine: WAITING timed out, falling back to IDLE");
                 enterState(State.IDLE);
+            }
+            // Show countdown in loading text
+            if (Math.floor(waitingTimer) % 2 === 0) {
+                script.uiManager.showWaiting();
+            }
+            break;
+
+        case State.CHALLENGE_UPLOAD:
+            // Poll for video pick + duration availability
+            if (script.choreographyManager.isVideoPicked()) {
+                var pickedDur = script.choreographyManager.getPickedVideoDuration();
+                if (pickedDur > 0) {  // wait until duration is available
+                    if (challengeVideoDuration <= 0 || Math.abs(pickedDur - challengeVideoDuration) <= DURATION_TOLERANCE) {
+                        print("StateMachine: Video matched! picked=" + pickedDur.toFixed(1) + "s, original=" + challengeVideoDuration.toFixed(1) + "s");
+                        enterState(State.CHALLENGE_PROMPT);
+                    } else {
+                        print("StateMachine: Wrong video! picked=" + pickedDur.toFixed(1) + "s, expected=" + challengeVideoDuration.toFixed(1) + "s");
+                        script.choreographyManager.clearVideoPicked();
+                        script.uiManager.showWrongVideo();
+                        // Re-prompt after a short delay
+                        var retryDelay = script.createEvent("DelayedCallbackEvent");
+                        retryDelay.bind(function () {
+                            if (currentState === State.CHALLENGE_UPLOAD) {
+                                script.choreographyManager.initVideoPreviewOnly();
+                                script.uiManager.showChallengeUpload();
+                            }
+                        });
+                        retryDelay.reset(2.0);
+                    }
+                }
             }
             break;
     }

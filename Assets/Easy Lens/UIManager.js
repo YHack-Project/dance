@@ -81,6 +81,20 @@ script.showSharePrompt = function () {
     setCombo("");
 };
 
+script.showChallengeUpload = function () {
+    setPrompt("Upload the\nsame video!");
+    setScore("");
+    setRating("");
+    setCombo("");
+};
+
+script.showWrongVideo = function () {
+    setPrompt("Wrong video!\nTry again");
+    setScore("");
+    setRating("");
+    setCombo("");
+};
+
 script.showMultiplayerResults = function (myScore, theirScore, iWon) {
     var result = iWon ? "YOU WIN!" : (myScore === theirScore ? "TIE!" : "YOU LOSE!");
     setPrompt(result + "\nYou: " + myScore + "\nThem: " + theirScore);
@@ -102,11 +116,7 @@ script.updateScore = function (score) {
 };
 
 script.updateCombo = function (combo) {
-    if (combo >= 2) {
-        setCombo(combo + "x Combo!");
-    } else {
-        setCombo("");
-    }
+    // Combo is shown in the HeadScore popup, not in the top-left corner
 };
 
 script.updateProgress = function (fraction) {
@@ -133,11 +143,11 @@ function setCombo(txt) {
 }
 
 function getStarRating(score) {
-    if (score >= 1800) return "* * * * *";
-    if (score >= 1400) return "* * * *";
-    if (score >= 1000) return "* * *";
-    if (score >= 600) return "* *";
-    return "*";
+    if (score >= 1800) return "\u2B50\u2B50\u2B50\u2B50\u2B50";
+    if (score >= 1400) return "\u2B50\u2B50\u2B50\u2B50";
+    if (score >= 1000) return "\u2B50\u2B50\u2B50";
+    if (score >= 600) return "\u2B50\u2B50";
+    return "\u2B50";
 }
 
 // Fade out rating text after display time

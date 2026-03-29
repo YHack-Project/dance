@@ -43,8 +43,8 @@ export class HeadScore extends BaseScriptComponent {
      * Called by ScoringEngine at each checkpoint.
      * Displays the floating score and triggers the aura glow.
      */
-    triggerScore(score: number, rating: string, combo: number): void {
-        this.displayScore(score, rating, combo);
+    triggerScore(score: number, rating: string, multiplier: number): void {
+        this.displayScore(score, rating, multiplier);
 
         // Also trigger the aura glow with the same score
         if (!isNull(this.auraGlow)) {
@@ -52,16 +52,17 @@ export class HeadScore extends BaseScriptComponent {
         }
     }
 
-    private displayScore(score: number, rating: string, combo: number): void {
+    private displayScore(score: number, rating: string, multiplier: number): void {
         if (isNull(this.scoreText)) return;
 
         // Determine tier
         const tier = getTier(score);
 
-        // Show rating text + combo
+        // Show rating text + multiplier
         let display = rating;
-        if (combo >= 2) {
-            display += "\n" + combo + "x Combo!";
+        if (multiplier > 1.0) {
+            const multStr = multiplier.toFixed(2).replace(/\.?0+$/, "");
+            display += "\n" + multStr + "x";
         }
         this.scoreText.text = display;
         this.scoreText.textFill.mode = TextFillMode.Solid;

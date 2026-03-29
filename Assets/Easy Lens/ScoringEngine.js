@@ -27,14 +27,34 @@ var JOINT_WEIGHTS = {
 
 // Rating thresholds (applied to angular-distance-based score)
 var PERFECT_THRESHOLD = 0.97;
-var GOOD_THRESHOLD = 0.92;
+var GREAT_THRESHOLD = 0.94;
+var GOOD_THRESHOLD = 0.90;
+var OK_THRESHOLD = 0.83;
 
 // Minimum quaternion dot product vs identity to consider a joint "active"
 var ACTIVE_JOINT_THRESHOLD = 0.995;
 
-// Scoring
+// Combo tier constants
+var COMBO_TIER_NONE    = 0;
+var COMBO_TIER_GOOD    = 1;
+var COMBO_TIER_GREAT   = 2;
+var COMBO_TIER_PERFECT = 3;
+
+// Multiplier increment per rating
+var MULT_INCREMENT_GOOD    = 0.1;
+var MULT_INCREMENT_GREAT   = 0.2;
+var MULT_INCREMENT_PERFECT = 0.35;
+
+// Multiplier cap per combo tier
+var MULT_CAP_GOOD    = 1.8;
+var MULT_CAP_GREAT   = 2.5;
+var MULT_CAP_PERFECT = 5.0;
+
+// Scoring state
 var totalScore = 0;
-var combo = 0;
+var comboMultiplier = 1.0;
+var comboTier = COMBO_TIER_NONE;
+var comboCount = 0;
 var lastCheckpointIndex = -1;
 var frameScoreSmooth = 0;
 var lastCheckpointRotations = null;
@@ -106,14 +126,74 @@ function computePoseSimilarity(userPose, guidePose, prevGuidePose) {
 
 function getRating(similarity) {
     if (similarity >= PERFECT_THRESHOLD) return "Perfect!";
+    if (similarity >= GREAT_THRESHOLD) return "Great!";
     if (similarity >= GOOD_THRESHOLD) return "Good!";
+    if (similarity >= OK_THRESHOLD) return "OK";
     return "Miss";
 }
 
 function getPointsForRating(rating) {
     if (rating === "Perfect!") return 300;
+    if (rating === "Great!") return 200;
     if (rating === "Good!") return 100;
+    if (rating === "OK") return 25;
     return 0;
+}
+
+function getRatingTier(rating) {
+    if (rating === "Perfect!") return COMBO_TIER_PERFECT;
+    if (rating === "Great!")   return COMBO_TIER_GREAT;
+    if (rating === "Good!")    return COMBO_TIER_GOOD;
+    return COMBO_TIER_NONE;
+}
+
+function processCombo(rating) {
+    var ratingTier = getRatingTier(rating);
+
+    // Miss/OK always break combo
+    if (ratingTier === COMBO_TIER_NONE) {
+        comboMultiplier = 1.0;
+        comboTier = COMBO_TIER_NONE;
+        comboCount = 0;
+        return 1.0;
+    }
+
+    // No active combo — start one (first hit gets 1.0x, no multiplier yet)
+    if (comboTier === COMBO_TIER_NONE) {
+        comboTier = ratingTier;
+        comboCount = 1;
+        return 1.0;
+    }
+
+    // Rating must be >= current combo tier to maintain
+    if (ratingTier < comboTier) {
+        comboMultiplier = 1.0;
+        comboTier = COMBO_TIER_NONE;
+        comboCount = 0;
+        return 1.0;
+    }
+
+    // Escalate tier if rating is higher (can't go down)
+    if (ratingTier > comboTier) {
+        comboTier = ratingTier;
+    }
+    comboCount++;
+
+    // Apply increment based on the rating
+    var increment = 0;
+    if (ratingTier === COMBO_TIER_GOOD)    increment = MULT_INCREMENT_GOOD;
+    if (ratingTier === COMBO_TIER_GREAT)   increment = MULT_INCREMENT_GREAT;
+    if (ratingTier === COMBO_TIER_PERFECT) increment = MULT_INCREMENT_PERFECT;
+    comboMultiplier += increment;
+
+    // Cap based on current combo tier
+    var cap = 1.0;
+    if (comboTier === COMBO_TIER_GOOD)    cap = MULT_CAP_GOOD;
+    if (comboTier === COMBO_TIER_GREAT)   cap = MULT_CAP_GREAT;
+    if (comboTier === COMBO_TIER_PERFECT) cap = MULT_CAP_PERFECT;
+    if (comboMultiplier > cap) comboMultiplier = cap;
+
+    return comboMultiplier;
 }
 
 // ============================================================
@@ -121,7 +201,9 @@ function getPointsForRating(rating) {
 // ============================================================
 script.reset = function () {
     totalScore = 0;
-    combo = 0;
+    comboMultiplier = 1.0;
+    comboTier = COMBO_TIER_NONE;
+    comboCount = 0;
     lastCheckpointIndex = -1;
     frameScoreSmooth = 0;
     lastCheckpointRotations = null;
@@ -152,30 +234,24 @@ script.update = function () {
             var rating = getRating(frameScoreSmooth);
             var points = getPointsForRating(rating);
 
-            // Combo multiplier
-            if (points > 0) {
-                combo++;
-                var multiplier = 1 + Math.floor(combo / 3) * 0.5;
-                points = Math.floor(points * multiplier);
-            } else {
-                combo = 0;
-            }
+            // Tiered combo multiplier
+            var multiplier = processCombo(rating);
+            points = Math.floor(points * multiplier);
 
             totalScore += points;
 
             // Save guide rotations for next checkpoint's movement comparison
             lastCheckpointRotations = guideRotations;
 
-            // Update UI (score/combo in corner — rating handled by HeadScore popup)
+            // Update UI
             if (script.uiManager) {
                 script.uiManager.updateScore(totalScore);
-                script.uiManager.updateCombo(combo);
             }
 
             // Trigger head score popup and aura glow
             if (script.headScore) {
-                print("ScoringEngine: triggerScore(" + points + ", " + rating + ", " + combo + ")");
-                script.headScore.triggerScore(points, rating, combo);
+                print("ScoringEngine: triggerScore(" + points + ", " + rating + ", mult=" + comboMultiplier.toFixed(2) + ")");
+                script.headScore.triggerScore(points, rating, comboMultiplier);
             } else {
                 print("ScoringEngine: headScore input is null!");
             }
