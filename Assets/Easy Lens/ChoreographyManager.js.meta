@@ -27,6 +27,12 @@
   PackagePolicy: CanBeUnpacked
   ScriptInputsHidden:
     guideSkeletonRoot: false
+    mediaPickerTexture: false
+    playbackSpeed: false
+    videoPersonScope: false
+    videoPreview: false
+    videoSkeletonRoot: false
+    videoTrackingScope: false
   ScriptTypesHidden:
     {}
   ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
@@ -37,6 +43,12 @@
     []
   DefaultScriptInputs:
     - guideSkeletonRoot: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      videoSkeletonRoot: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      mediaPickerTexture: !<reference.Texture> 00000000-0000-0000-0000-000000000000
+      videoTrackingScope: !<reference.TextureTrackingScope> 00000000-0000-0000-0000-000000000000
+      videoPersonScope: !<reference.PersonTrackingScope> 00000000-0000-0000-0000-000000000000
+      videoPreview: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      playbackSpeed: !<float> 1.000000
   ScriptTypes:
     -
       {}

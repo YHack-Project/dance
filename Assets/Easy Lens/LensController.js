@@ -9,6 +9,9 @@
 
 try {
 
+if (script.__controllerInitialized) throw "already initialized";
+script.__controllerInitialized = true;
+
 // Lightweight rule-based expression classifier using Face Events
 // Note: Only dynamic changes; assumes initial block properties set elsewhere.
 

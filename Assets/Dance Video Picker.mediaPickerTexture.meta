@@ -1,0 +1,16 @@
+- !<AssetImportMetadata/15e91dc4-97a7-4bb6-8469-6eeb8351b54e>
+  ImportedAssetIds:
+    Texture: !<reference> 3b5164dc-722a-4c57-a9a1-332b9a53fe99
+  ImporterName: MediaPickerTextureImporter
+  PrimaryAsset: !<reference> 3b5164dc-722a-4c57-a9a1-332b9a53fe99
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    {}
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000

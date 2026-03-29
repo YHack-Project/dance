@@ -13,10 +13,22 @@ var RATING_DISPLAY_TIME = 0.8;
 // STATE DISPLAY
 // ============================================================
 script.showIdle = function () {
-    setPrompt("Tap to Dance!");
+    setPrompt("Tap to Upload");
     setScore("");
     setRating("");
     setCombo("");
+};
+
+script.showVideoLoading = function () {
+    setPrompt("Select a video...");
+    setScore("");
+    setRating("");
+    setCombo("");
+};
+
+script.showRecordingProgress = function (progress) {
+    var pct = Math.floor(progress * 100);
+    setPrompt("Loading " + pct + "%");
 };
 
 script.showCountdown = function (num) {
@@ -34,7 +46,7 @@ script.showDancing = function () {
 
 script.showResults = function (finalScore) {
     var stars = getStarRating(finalScore);
-    setPrompt(stars + "\nScore: " + finalScore + "\n\nTap to Retry");
+    setPrompt(stars + "\n" + finalScore + "\n\nTap to Retry");
     setScore("");
     setRating("");
     setCombo("");

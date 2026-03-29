@@ -10,6 +10,8 @@
 //@input Component.ScriptComponent face_landmarks
 
 
+// Disabled: visual overlay not needed during dance game
+if (true) { throw "skip"; }
 try {
 
 // Full-body pose guide driven by full body tracking (when available),

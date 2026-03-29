@@ -1,0 +1,8 @@
+- !<MediaPickerTexture/3b5164dc-722a-4c57-a9a1-332b9a53fe99>
+  PackagePath: ""
+  ShowOnStart: false
+  ImageMode: None
+  VideoMode: All
+  CropToFace: false
+  Scale: {x: 1.000000, y: 1.000000}
+  FaceRegion: HeadCenter

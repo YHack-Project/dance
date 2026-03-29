@@ -28,6 +28,7 @@
   ScriptInputsHidden:
     choreographyManager: false
     guideAvatar: false
+    guideOT3D: false
     scoringEngine: false
     uiManager: false
   ScriptTypesHidden:
@@ -43,6 +44,7 @@
       scoringEngine: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
       uiManager: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
       guideAvatar: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      guideOT3D: !<reference.ObjectTracking3D> 00000000-0000-0000-0000-000000000000
   ScriptTypes:
     -
       {}

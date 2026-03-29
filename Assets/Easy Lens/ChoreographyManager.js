@@ -1,9 +1,16 @@
 // ChoreographyManager.js - Choreography Data & Guide Avatar Animation
-// Stores dance sequences and drives the guide skeleton through them.
+// Supports two modes:
+//   Keyframe mode: hardcoded dance with SLERP interpolation
+//   Video mode: extracts poses from uploaded video, stores as keyframes, then plays back
 
 //@input SceneObject guideSkeletonRoot {"label": "Guide Skeleton Root (Hips)"}
+//@input SceneObject videoSkeletonRoot {"label": "Video Skeleton Root (Hips)"}
+//@input Asset.Texture mediaPickerTexture {"label": "Media Picker Texture"}
+//@input Asset.TextureTrackingScope videoTrackingScope {"label": "Video Tracking Scope"}
+//@input Asset.PersonTrackingScope videoPersonScope {"label": "Video Person Scope"}
+//@input SceneObject videoPreview {"label": "Video Preview Screen Image"}
+//@input float playbackSpeed = 1.0 {"label": "Playback Speed", "widget": "slider", "min": 0.25, "max": 1.5, "step": 0.25}
 
-// Joint names we track (must match skeleton hierarchy names)
 var JOINT_NAMES = [
     "Hips", "Spine", "Spine1", "Spine2", "Neck", "Head",
     "LeftShoulder", "LeftArm", "LeftForearm", "LeftHand",
@@ -12,166 +19,369 @@ var JOINT_NAMES = [
     "RightUpLeg", "RightLeg", "RightFoot"
 ];
 
-var guideJoints = {}; // name -> SceneObject
-var restRotations = {}; // name -> quat (bind pose)
+var guideJoints = {};
+var restRotations = {};
+var videoJoints = {};
 var playing = false;
 var currentTime = 0.0;
 
+// Video mode state
+var videoMode = false;
+var videoDuration = 0.0;
+var videoReady = false;
+var CHECKPOINT_INTERVAL = 1.0;
+
+// Recording state
+var recording = false;
+var recordedPoses = [];
+var recordTime = 0.0;
+var RECORD_INTERVAL = 0.2;
+var lastRecordSample = 0.0;
+var recordingProgress = 0.0;
+var activeDance = null;
+
+// Callback guard - prevents duplicate setup
+var callbacksInitialized = false;
+var videoPicked = false; // true after user picks a file, cleared when recording starts
+var expectingPick = false; // true only after picker is shown, prevents stale auto-picks
+var videoOT3D = null; // cached reference to Video Skeleton's ObjectTracking3D
+
+// Recording failure flag
+var recordingFailed = false;
+
+
 // ============================================================
-// DANCE DATA - "Basic Groove" (16 seconds)
-// Each pose: { time, joints: { JointName: [rx, ry, rz] in degrees } }
-// Unspecified joints default to rest pose [0,0,0].
+// DANCE DATA
 // ============================================================
 var DANCE = {
     name: "Basic Groove",
     duration: 16.0,
     poses: [
-        // t=0: Neutral standing
         { time: 0.0, joints: {} },
-
-        // t=2: Right arm raised out
-        {
-            time: 2.0, joints: {
-                "RightArm": [0, 0, 60],
-                "RightForearm": [0, 0, 30]
-            }
-        },
-
-        // t=4: Switch - left arm raised
-        {
-            time: 4.0, joints: {
-                "LeftArm": [0, 0, -60],
-                "LeftForearm": [0, 0, -30]
-            }
-        },
-
-        // t=6: Both arms raised high
-        {
-            time: 6.0, joints: {
-                "RightArm": [0, 0, 80],
-                "RightForearm": [0, 0, 20],
-                "LeftArm": [0, 0, -80],
-                "LeftForearm": [0, 0, -20]
-            }
-        },
-
-        // t=8: Arms down, squat
-        {
-            time: 8.0, joints: {
-                "LeftUpLeg": [-35, 0, 0],
-                "LeftLeg": [55, 0, 0],
-                "RightUpLeg": [-35, 0, 0],
-                "RightLeg": [55, 0, 0],
-                "Spine": [-10, 0, 0]
-            }
-        },
-
-        // t=10: Stand, lean right with right arm out
-        {
-            time: 10.0, joints: {
-                "Spine": [0, 0, 15],
-                "Spine1": [0, 0, 5],
-                "RightArm": [-20, 0, 50]
-            }
-        },
-
-        // t=12: Lean left with left arm out
-        {
-            time: 12.0, joints: {
-                "Spine": [0, 0, -15],
-                "Spine1": [0, 0, -5],
-                "LeftArm": [-20, 0, -50]
-            }
-        },
-
-        // t=14: Wide stance, both arms out
-        {
-            time: 14.0, joints: {
-                "RightArm": [-20, 0, 55],
-                "LeftArm": [-20, 0, -55],
-                "LeftUpLeg": [-25, 0, 0],
-                "LeftLeg": [40, 0, 0],
-                "RightUpLeg": [-25, 0, 0],
-                "RightLeg": [40, 0, 0]
-            }
-        },
-
-        // t=16: Return to neutral
+        { time: 2.0, joints: { "RightArm": [0, 0, 60], "RightForearm": [0, 0, 30] } },
+        { time: 4.0, joints: { "LeftArm": [0, 0, -60], "LeftForearm": [0, 0, -30] } },
+        { time: 6.0, joints: { "RightArm": [0, 0, 80], "RightForearm": [0, 0, 20], "LeftArm": [0, 0, -80], "LeftForearm": [0, 0, -20] } },
+        { time: 8.0, joints: { "LeftUpLeg": [-35, 0, 0], "LeftLeg": [55, 0, 0], "RightUpLeg": [-35, 0, 0], "RightLeg": [55, 0, 0], "Spine": [-10, 0, 0] } },
+        { time: 10.0, joints: { "Spine": [0, 0, 15], "Spine1": [0, 0, 5], "RightArm": [-20, 0, 50] } },
+        { time: 12.0, joints: { "Spine": [0, 0, -15], "Spine1": [0, 0, -5], "LeftArm": [-20, 0, -50] } },
+        { time: 14.0, joints: { "RightArm": [-20, 0, 55], "LeftArm": [-20, 0, -55], "LeftUpLeg": [-25, 0, 0], "LeftLeg": [40, 0, 0], "RightUpLeg": [-25, 0, 0], "RightLeg": [40, 0, 0] } },
         { time: 16.0, joints: {} }
     ],
-
-    // Scoring checkpoints - times where scoring is evaluated
-    checkpoints: [2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0]
+    checkpoints: [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0]
 };
 
 // ============================================================
-// SKELETON TRAVERSAL
+// HELPERS
 // ============================================================
 function findJoints(root, target) {
     if (!root) return;
     var name = root.name;
-    if (JOINT_NAMES.indexOf(name) >= 0) {
-        target[name] = root;
-    }
-    for (var i = 0; i < root.getChildrenCount(); i++) {
-        findJoints(root.getChild(i), target);
-    }
+    if (JOINT_NAMES.indexOf(name) >= 0) target[name] = root;
+    for (var i = 0; i < root.getChildrenCount(); i++) findJoints(root.getChild(i), target);
 }
 
-// ============================================================
-// ROTATION HELPERS
-// ============================================================
 var DEG2RAD = Math.PI / 180.0;
 
 function eulerToQuat(rx, ry, rz) {
     return quat.fromEulerAngles(rx * DEG2RAD, ry * DEG2RAD, rz * DEG2RAD);
 }
 
+function copyQuat(src) {
+    return quat.quatIdentity().multiply(src);
+}
+
 function getJointRotationAtPose(pose, jointName) {
     if (pose.joints[jointName]) {
         var r = pose.joints[jointName];
-        return eulerToQuat(r[0], r[1], r[2]);
+        if (Array.isArray(r)) return eulerToQuat(r[0], r[1], r[2]);
+        return r;
     }
     return quat.quatIdentity();
 }
 
 // ============================================================
+// POSE RECORDING
+// ============================================================
+function captureCurrentVideoFrame() {
+    var pose = { time: recordTime, joints: {} };
+    var hasAny = false;
+    for (var i = 0; i < JOINT_NAMES.length; i++) {
+        var name = JOINT_NAMES[i];
+        if (videoJoints[name]) {
+            pose.joints[name] = copyQuat(videoJoints[name].getTransform().getLocalRotation());
+            hasAny = true;
+        }
+    }
+    if (hasAny) {
+        if (recordedPoses.length === 0) {
+            var sample = pose.joints["RightArm"];
+            if (sample) print("CHOREO: First RightArm quat: " + sample.x.toFixed(3) + "," + sample.y.toFixed(3) + "," + sample.z.toFixed(3) + "," + sample.w.toFixed(3));
+            print("CHOREO: First frame has " + Object.keys(pose.joints).length + " joints");
+        }
+        recordedPoses.push(pose);
+    } else {
+        if (recordedPoses.length === 0 && recordTime > 1.0) {
+            print("CHOREO: WARNING - No joints tracked at " + recordTime.toFixed(2) + "s (video body tracking may not be working)");
+        }
+    }
+}
+
+function finishRecording() {
+    recording = false;
+
+    // Stop video
+    try {
+        var vc = script.mediaPickerTexture.control.videoControl;
+        if (vc) vc.pause();
+    } catch (e) {}
+
+    videoDuration = recordTime;
+
+    // Guard: if too few poses were captured, signal failure
+    if (recordedPoses.length < 3) {
+        print("CHOREO: WARNING - Only " + recordedPoses.length + " poses captured, recording failed");
+        videoMode = false;
+        videoReady = false;
+        recordingFailed = true;
+        activeDance = null;
+        return;
+    }
+
+    videoReady = true;
+
+    activeDance = {
+        duration: videoDuration,
+        poses: recordedPoses,
+        checkpoints: []
+    };
+    for (var t = CHECKPOINT_INTERVAL; t < videoDuration - 0.5; t += CHECKPOINT_INTERVAL) {
+        activeDance.checkpoints.push(t);
+    }
+
+    print("CHOREO: Recording done - " + recordedPoses.length + " poses, " + videoDuration.toFixed(1) + "s, " + (recordedPoses.length > 0 ? Object.keys(recordedPoses[0].joints).length : 0) + " joints/pose");
+}
+
+script.updateRecording = function (dt) {
+    if (!recording) return;
+    recordTime += dt;
+    recordingProgress = videoDuration > 0 ? Math.min(recordTime / videoDuration, 1.0) : 0;
+
+    if (recordTime - lastRecordSample >= RECORD_INTERVAL) {
+        captureCurrentVideoFrame();
+        lastRecordSample = recordTime;
+    }
+
+    if (videoDuration > 0 && recordTime >= videoDuration) {
+        finishRecording();
+    }
+};
+
+script.getRecordingProgress = function () { return recordingProgress; };
+script.isRecording = function () { return recording; };
+
+// ============================================================
+// VIDEO MODE
+// ============================================================
+// Tracking scopes are pre-configured in asset files:
+// 3D Body Tracking 2 → Video Person Scope → Video Tracking Scope → Media Picker Texture
+
+function startRecordingFromVideo() {
+    var vc = script.mediaPickerTexture.control.videoControl;
+    if (!vc) {
+        print("CHOREO: No videoControl, aborting");
+        videoMode = false;
+        return;
+    }
+
+    videoDuration = vc.duration;
+    print("CHOREO: Video duration=" + videoDuration.toFixed(1) + "s, starting recording");
+
+    recording = true;
+    recordTime = 0.0;
+    lastRecordSample = 0.0;
+    recordedPoses = [];
+    recordingProgress = 0.0;
+
+    // Seek to start and play once
+    vc.seek(0);
+    try { vc.play(1); } catch (e) {}
+}
+
+script.initVideoMode = function () {
+    if (!script.mediaPickerTexture) {
+        print("CHOREO: ERROR - mediaPickerTexture not set!");
+        return;
+    }
+
+    videoMode = true;
+    videoReady = false;
+    recording = false;
+    recordedPoses = [];
+    activeDance = null;
+    recordingFailed = false;
+    videoPicked = false;
+
+    var provider = script.mediaPickerTexture.control;
+    provider.isVideoPickingEnabled = true;
+    provider.isImagePickingEnabled = false;
+    provider.isFaceImagePickingEnabled = false;
+
+    // Set up callbacks ONCE to avoid accumulation
+    if (!callbacksInitialized) {
+        callbacksInitialized = true;
+
+        provider.setFilePickedCallback(function () {
+            if (!expectingPick) {
+                print("CHOREO: Ignoring stale file pick");
+                return;
+            }
+            expectingPick = false;
+            provider.hideMediaPicker();
+            print("CHOREO: File picked");
+
+            if (!provider.videoControl) {
+                print("CHOREO: Not a video");
+                videoMode = false;
+                return;
+            }
+            provider.videoControl.volume = 0;
+            provider.videoControl.play(1);
+            videoPicked = true;
+            print("CHOREO: Video loading, waiting for duration...");
+        });
+    }
+
+    // Show picker with a two-stage delay:
+    // 1. Show the picker (may trigger stale auto-pick from cached selection)
+    // 2. Only start accepting picks after another short delay
+    var pickerDelay = script.createEvent("DelayedCallbackEvent");
+    pickerDelay.bind(function () {
+        provider.showMediaPicker();
+        print("CHOREO: Media picker shown, arming pick listener...");
+        var armDelay = script.createEvent("DelayedCallbackEvent");
+        armDelay.bind(function () {
+            expectingPick = true;
+            print("CHOREO: Now accepting picks");
+        });
+        armDelay.reset(0.3);
+    });
+    pickerDelay.reset(0.5);
+};
+
+script.isVideoReady = function () { return videoMode && videoReady; };
+script.isVideoMode = function () { return videoMode; };
+script.isRecordingFailed = function () { return recordingFailed; };
+script.getPlaybackSpeed = function () { return script.playbackSpeed; };
+
+// Called every frame during VIDEO_LOADING to poll for video readiness.
+// Once the video has a valid duration, starts recording.
+script.pollVideoReady = function () {
+    if (!videoPicked || recording || videoReady || recordingFailed) return;
+    try {
+        var vc = script.mediaPickerTexture.control.videoControl;
+        if (vc && vc.duration > 0) {
+            print("CHOREO: Video ready (duration=" + vc.duration.toFixed(1) + "s), starting recording");
+            videoPicked = false;
+            startRecordingFromVideo();
+        }
+    } catch (e) {}
+};
+
+script.resetToKeyframeMode = function () {
+    videoMode = false;
+    videoReady = false;
+    videoDuration = 0.0;
+    recording = false;
+    recordedPoses = [];
+    activeDance = null;
+    recordingProgress = 0.0;
+    recordingFailed = false;
+    videoPicked = false;
+    expectingPick = false;
+    if (script.videoPreview) script.videoPreview.enabled = false;
+};
+
+// ============================================================
 // PUBLIC API
 // ============================================================
 script.getDuration = function () {
+    if (videoMode && activeDance) return activeDance.duration;
     return DANCE.duration;
 };
 
 script.getCheckpoints = function () {
+    if (videoMode && activeDance) return activeDance.checkpoints;
     return DANCE.checkpoints;
 };
 
 script.startPlayback = function () {
     playing = true;
     currentTime = 0.0;
+    var dance = (videoMode && activeDance) ? activeDance : DANCE;
+    print("CHOREO: startPlayback - guideJoints=" + Object.keys(guideJoints).length +
+          ", poses=" + dance.poses.length +
+          ", checkpoints=" + dance.checkpoints.length +
+          ", videoMode=" + videoMode);
+    if (videoMode && script.mediaPickerTexture) {
+        // Replay video in sync — pause, seek to start, then play
+        try {
+            var vc = script.mediaPickerTexture.control.videoControl;
+            if (vc) {
+                try { vc.pause(); } catch (e2) {}
+                vc.seek(0);
+                vc.play(script.playbackSpeed);
+                print("CHOREO: Video replay started at " + script.playbackSpeed + "x, duration=" + (vc.duration || 0).toFixed(1) + "s");
+            } else {
+                print("CHOREO: WARNING - no videoControl for replay");
+            }
+        } catch (e) {
+            print("CHOREO: Video replay error: " + e);
+        }
+        // Show video preview
+        if (script.videoPreview) {
+            script.videoPreview.enabled = true;
+            var img = script.videoPreview.getComponent("Component.Image");
+            if (img) {
+                if (img.mainPass) {
+                    img.mainPass.baseTex = script.mediaPickerTexture;
+                    print("CHOREO: Video preview texture assigned");
+                } else {
+                    print("CHOREO: WARNING - Image component has no mainPass");
+                }
+            } else {
+                print("CHOREO: WARNING - Video Preview has no Image component");
+            }
+        } else {
+            print("CHOREO: WARNING - videoPreview input not set");
+        }
+    }
 };
 
 script.stopPlayback = function () {
     playing = false;
+    if (videoMode && script.mediaPickerTexture) {
+        try {
+            var vc = script.mediaPickerTexture.control.videoControl;
+            if (vc) vc.pause();
+        } catch (e) {}
+        if (script.videoPreview) script.videoPreview.enabled = false;
+    }
 };
 
-script.getTime = function () {
-    return currentTime;
-};
+script.getTime = function () { return currentTime; };
 
-// Returns an object { JointName: quat } with the current guide rotations
 script.getCurrentRotations = function () {
-    if (DANCE.poses.length === 0) return null;
+    var dance = (videoMode && activeDance) ? activeDance : DANCE;
+    if (dance.poses.length === 0) return null;
 
-    // Find surrounding keyframe poses
-    var poseA = DANCE.poses[0];
-    var poseB = DANCE.poses[0];
+    var poseA = dance.poses[0];
+    var poseB = dance.poses[0];
     var blend = 0.0;
 
-    for (var i = 0; i < DANCE.poses.length - 1; i++) {
-        if (currentTime >= DANCE.poses[i].time && currentTime <= DANCE.poses[i + 1].time) {
-            poseA = DANCE.poses[i];
-            poseB = DANCE.poses[i + 1];
+    for (var i = 0; i < dance.poses.length - 1; i++) {
+        if (currentTime >= dance.poses[i].time && currentTime <= dance.poses[i + 1].time) {
+            poseA = dance.poses[i];
+            poseB = dance.poses[i + 1];
             var span = poseB.time - poseA.time;
             blend = span > 0 ? (currentTime - poseA.time) / span : 0;
             break;
@@ -188,27 +398,18 @@ script.getCurrentRotations = function () {
     return rotations;
 };
 
+// Pending rotations to apply in LateUpdate (after tracking system runs)
+var pendingRotations = null;
+
 script.update = function (dt) {
     if (!playing) return;
 
-    currentTime += dt;
-    if (currentTime > DANCE.duration) {
-        currentTime = DANCE.duration;
-    }
+    currentTime += dt * script.playbackSpeed;
+    var duration = script.getDuration();
+    if (currentTime > duration) currentTime = duration;
 
-    // Apply rotations to guide skeleton
-    var rotations = script.getCurrentRotations();
-    if (!rotations) return;
-
-    for (var name in rotations) {
-        if (guideJoints[name]) {
-            // Combine rest rotation with choreography rotation
-            var finalRot = restRotations[name]
-                ? restRotations[name].multiply(rotations[name])
-                : rotations[name];
-            guideJoints[name].getTransform().setLocalRotation(finalRot);
-        }
-    }
+    // Compute rotations now, apply in LateUpdate so they aren't overwritten by OT3D
+    pendingRotations = script.getCurrentRotations();
 };
 
 // ============================================================
@@ -217,20 +418,55 @@ script.update = function (dt) {
 var startEvent = script.createEvent("OnStartEvent");
 startEvent.bind(function () {
     if (!script.guideSkeletonRoot) {
-        print("ChoreographyManager: ERROR - guideSkeletonRoot not set!");
+        print("CHOREO: ERROR - guideSkeletonRoot not set!");
         return;
     }
 
-    // Find all joints in the guide skeleton
     findJoints(script.guideSkeletonRoot, guideJoints);
-
-    // Save rest rotations
     for (var i = 0; i < JOINT_NAMES.length; i++) {
         var name = JOINT_NAMES[i];
-        if (guideJoints[name]) {
-            restRotations[name] = guideJoints[name].getTransform().getLocalRotation();
-        }
+        if (guideJoints[name]) restRotations[name] = guideJoints[name].getTransform().getLocalRotation();
     }
 
-    print("ChoreographyManager: Initialized with " + Object.keys(guideJoints).length + " joints");
+    if (script.videoPreview) script.videoPreview.enabled = false;
+
+    if (script.videoSkeletonRoot) {
+        findJoints(script.videoSkeletonRoot, videoJoints);
+
+        // Cache the OT3D component from the Video Skeleton hierarchy
+        // Hips → SkeletonObject → StickFigure → 3DBodyTracking (has OT3D)
+        try {
+            var bodyTrackingObj = script.videoSkeletonRoot.getParent().getParent().getParent();
+            videoOT3D = bodyTrackingObj.getComponent("Component.ObjectTracking3D");
+            print("CHOREO: Video OT3D cached from '" + bodyTrackingObj.name + "', asset: " + (videoOT3D ? videoOT3D.trackingAsset.name : "null"));
+        } catch (e) {
+            print("CHOREO: ERROR caching OT3D: " + e);
+        }
+
+        print("CHOREO: Video skeleton: " + Object.keys(videoJoints).length + " joints");
+    }
+
+    print("CHOREO: Guide skeleton: " + Object.keys(guideJoints).length + " joints");
+});
+
+// Apply rotations in LateUpdate so they run AFTER the OT3D tracking system.
+// This ensures our choreography rotations aren't overwritten by body tracking.
+var lateUpdate = script.createEvent("LateUpdateEvent");
+lateUpdate.bind(function () {
+    if (!pendingRotations) return;
+    var rotations = pendingRotations;
+    pendingRotations = null;
+
+    for (var name in rotations) {
+        if (guideJoints[name]) {
+            if (videoMode && activeDance) {
+                guideJoints[name].getTransform().setLocalRotation(rotations[name]);
+            } else {
+                var finalRot = restRotations[name]
+                    ? restRotations[name].multiply(rotations[name])
+                    : rotations[name];
+                guideJoints[name].getTransform().setLocalRotation(finalRot);
+            }
+        }
+    }
 });
