@@ -1,8 +1,3 @@
-.claude/
-.mcp.json
-.mcp.json.meta
-CLAUDE.md
-
 # Shipped by Lens Studio
 
 # The lines below are automatically generated and updated by Lens Studio.
@@ -21,3 +16,8 @@ Workspaces/**
 *.lock
 
 # Shipped by Lens Studio
+.claude/
+.mcp.json
+.mcp.json.meta
+CLAUDE.md
+

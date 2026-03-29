@@ -4,6 +4,7 @@
 //@input Component.ScriptComponent choreographyManager
 //@input Component.ScriptComponent bodyTracker
 //@input Component.ScriptComponent uiManager
+//@input Component.ScriptComponent headScore {"label": "Head Score Effect"}
 
 var JOINT_NAMES = [
     "Hips", "Spine", "Spine1", "Spine2", "Neck", "Head",
@@ -150,6 +151,11 @@ script.update = function () {
                 script.uiManager.showRating(rating);
                 script.uiManager.updateScore(totalScore);
                 script.uiManager.updateCombo(combo);
+            }
+
+            // Trigger head score popup and aura glow
+            if (script.headScore) {
+                script.headScore.triggerScore(points);
             }
 
             break;
