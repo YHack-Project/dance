@@ -28,6 +28,7 @@
   ScriptInputsHidden:
     bodyTracker: false
     choreographyManager: false
+    headScore: false
     uiManager: false
   ScriptTypesHidden:
     {}
@@ -41,6 +42,7 @@
     - choreographyManager: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
       bodyTracker: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
       uiManager: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
+      headScore: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
   ScriptTypes:
     -
       {}

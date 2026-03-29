@@ -5,6 +5,7 @@
 //@input Component.ScriptComponent choreographyManager
 //@input Component.ScriptComponent bodyTracker
 //@input Component.ScriptComponent uiManager
+//@input Component.ScriptComponent headScore {"label": "Head Score Effect"}
 
 var JOINT_NAMES = [
     "Hips", "Spine", "Spine1", "Spine2", "Neck", "Head",
@@ -25,8 +26,8 @@ var JOINT_WEIGHTS = {
 };
 
 // Rating thresholds (applied to angular-distance-based score)
-var PERFECT_THRESHOLD = 0.97;
-var GOOD_THRESHOLD = 0.90;
+var PERFECT_THRESHOLD = 0.99;
+var GOOD_THRESHOLD = 0.95;
 
 // Minimum quaternion dot product vs identity to consider a joint "active"
 var ACTIVE_JOINT_THRESHOLD = 0.995;
@@ -77,7 +78,7 @@ function computePoseSimilarity(userPose, guidePose, prevGuidePose) {
         var name = JOINT_NAMES[i];
         var weight = JOINT_WEIGHTS[name] || 1.0;
 
-        if (userPose[name] && guidePose[name]) {
+        if (guidePose[name]) {
             if (isNearIdentity(guidePose[name])) {
                 continue;
             }
@@ -88,13 +89,17 @@ function computePoseSimilarity(userPose, guidePose, prevGuidePose) {
                 weight *= movementMultiplier(delta);
             }
 
-            var sim = quatSimilarity(userPose[name], guidePose[name]);
+            // Missing user joint = 0 similarity (penalize off-camera limbs)
+            var sim = 0;
+            if (userPose[name]) {
+                sim = quatSimilarity(userPose[name], guidePose[name]);
+            }
             weightedScore += sim * weight;
             totalWeight += weight;
         }
     }
 
-    if (totalWeight === 0) return 0.95;
+    if (totalWeight === 0) return 0;
 
     return weightedScore / totalWeight;
 }
@@ -134,14 +139,14 @@ script.update = function () {
     // Compute continuous similarity with movement-weighted joints
     var similarity = computePoseSimilarity(userPose, guideRotations, lastCheckpointRotations);
 
-    frameScoreSmooth = frameScoreSmooth * 0.5 + similarity * 0.5;
+    frameScoreSmooth = frameScoreSmooth * 0.2 + similarity * 0.8;
 
     // Check for checkpoint scoring
     var checkpoints = script.choreographyManager.getCheckpoints();
     for (var i = 0; i < checkpoints.length; i++) {
         if (i <= lastCheckpointIndex) continue;
 
-        if (currentTime >= checkpoints[i] - 0.15 && currentTime <= checkpoints[i] + 0.15) {
+        if (currentTime >= checkpoints[i] - 0.10 && currentTime <= checkpoints[i] + 0.10) {
             lastCheckpointIndex = i;
 
             var rating = getRating(frameScoreSmooth);
@@ -161,11 +166,18 @@ script.update = function () {
             // Save guide rotations for next checkpoint's movement comparison
             lastCheckpointRotations = guideRotations;
 
-            // Update UI
+            // Update UI (score/combo in corner — rating handled by HeadScore popup)
             if (script.uiManager) {
-                script.uiManager.showRating(rating);
                 script.uiManager.updateScore(totalScore);
                 script.uiManager.updateCombo(combo);
+            }
+
+            // Trigger head score popup and aura glow
+            if (script.headScore) {
+                print("ScoringEngine: triggerScore(" + points + ", " + rating + ", " + combo + ")");
+                script.headScore.triggerScore(points, rating, combo);
+            } else {
+                print("ScoringEngine: headScore input is null!");
             }
 
             break;

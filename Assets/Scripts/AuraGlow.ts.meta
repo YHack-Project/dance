@@ -1,0 +1,47 @@
+- !<AssetImportMetadata/2da865fa-eb5f-451a-8890-30c9240e27ef>
+  ImportedAssetIds:
+    TypeScriptAsset: !<reference> e505898c-7e2d-4338-8a13-46a26ddce0fe
+  ImporterName: TypeScriptAssetImporter
+  PrimaryAsset: !<reference> e505898c-7e2d-4338-8a13-46a26ddce0fe
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    TypeScriptAsset: !<own> c59b333a-65dc-4d66-bbfe-40bd8b6550ae
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<TypeScriptAssetData/c59b333a-65dc-4d66-bbfe-40bd8b6550ae>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: ab576ca9-e0e1-435e-97f9-e33c962f6164
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    glowImage: false
+    segmentationTexture: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - segmentationTexture: !<reference.Texture> 00000000-0000-0000-0000-000000000000
+      glowImage: !<reference.Image> 00000000-0000-0000-0000-000000000000
+  ScriptTypes:
+    -
+      {}
+  InputLines:
+    - // @input Asset.Texture segmentationTexture
+    - // @input Component.Image glowImage
