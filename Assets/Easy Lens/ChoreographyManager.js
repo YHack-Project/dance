@@ -461,6 +461,89 @@ startEvent.bind(function () {
     print("CHOREO: Guide skeleton: " + Object.keys(guideJoints).length + " joints");
 });
 
+// ============================================================
+// EXPORT / IMPORT — for turn-based multiplayer
+// ============================================================
+
+// Round a number to n decimal places
+function round(v, n) {
+    var f = Math.pow(10, n);
+    return Math.round(v * f) / f;
+}
+
+// Export current dance as a compact serializable object
+script.exportDance = function () {
+    var dance = (videoMode && activeDance) ? activeDance : DANCE;
+    if (!dance) return null;
+
+    var compactPoses = [];
+    for (var i = 0; i < dance.poses.length; i++) {
+        var pose = dance.poses[i];
+        var jointData = [];
+        for (var j = 0; j < JOINT_NAMES.length; j++) {
+            var name = JOINT_NAMES[j];
+            if (pose.joints[name]) {
+                var q = pose.joints[name];
+                // Handle both quaternion objects and euler arrays
+                if (q.x !== undefined) {
+                    jointData.push(j, round(q.x, 3), round(q.y, 3), round(q.z, 3), round(q.w, 3));
+                } else if (Array.isArray(q)) {
+                    // Euler angles [rx, ry, rz] — convert to quat first
+                    var quat_val = eulerToQuat(q[0], q[1], q[2]);
+                    jointData.push(j, round(quat_val.x, 3), round(quat_val.y, 3), round(quat_val.z, 3), round(quat_val.w, 3));
+                }
+            }
+        }
+        compactPoses.push([round(pose.time, 2), jointData]);
+    }
+
+    return {
+        d: round(dance.duration, 2),
+        c: dance.checkpoints.map(function (t) { return round(t, 2); }),
+        p: compactPoses
+    };
+};
+
+// Import a received compact dance and set it as the active dance
+script.importDance = function (data) {
+    if (!data || !data.p) return false;
+
+    var poses = [];
+    for (var i = 0; i < data.p.length; i++) {
+        var entry = data.p[i];
+        var time = entry[0];
+        var jointData = entry[1];
+        var joints = {};
+
+        // Each joint is stored as [jointIndex, x, y, z, w]
+        for (var k = 0; k < jointData.length; k += 5) {
+            var idx = jointData[k];
+            var name = JOINT_NAMES[idx];
+            joints[name] = quat.fromEulerVec(vec3.zero()); // placeholder
+            joints[name].x = jointData[k + 1];
+            joints[name].y = jointData[k + 2];
+            joints[name].z = jointData[k + 3];
+            joints[name].w = jointData[k + 4];
+        }
+
+        poses.push({ time: time, joints: joints });
+    }
+
+    activeDance = {
+        duration: data.d,
+        poses: poses,
+        checkpoints: data.c || []
+    };
+
+    videoMode = true;
+    videoReady = true;
+    playing = false;
+    currentTime = 0;
+
+    print("CHOREO: Imported dance - " + poses.length + " poses, " + data.d + "s");
+    return true;
+};
+
 // Apply rotations in LateUpdate so they run AFTER the OT3D tracking system.
 // This ensures our choreography rotations aren't overwritten by body tracking.
 var lateUpdate = script.createEvent("LateUpdateEvent");

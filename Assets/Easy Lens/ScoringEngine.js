@@ -26,8 +26,8 @@ var JOINT_WEIGHTS = {
 };
 
 // Rating thresholds (applied to angular-distance-based score)
-var PERFECT_THRESHOLD = 0.99;
-var GOOD_THRESHOLD = 0.95;
+var PERFECT_THRESHOLD = 0.97;
+var GOOD_THRESHOLD = 0.92;
 
 // Minimum quaternion dot product vs identity to consider a joint "active"
 var ACTIVE_JOINT_THRESHOLD = 0.995;

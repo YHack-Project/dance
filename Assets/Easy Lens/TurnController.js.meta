@@ -1,20 +1,20 @@
-- !<AssetImportMetadata/aa650ae9-3773-4003-b0a2-4d953d6aba80>
+- !<AssetImportMetadata/9264f00e-8d49-4b33-94a6-cec40dd4cb75>
   ImportedAssetIds:
-    JavaScriptAsset: !<reference> 2404bc48-7dc0-44c5-8b5c-33858bb2e7e8
+    JavaScriptAsset: !<reference> 49e0ad58-cda8-46ec-90e5-3c5d0fa8f4a1
   ImporterName: JavaScriptAssetImporter
-  PrimaryAsset: !<reference> 2404bc48-7dc0-44c5-8b5c-33858bb2e7e8
+  PrimaryAsset: !<reference> 49e0ad58-cda8-46ec-90e5-3c5d0fa8f4a1
   PackageType: NotAPackage
   LegacyPackagePolicy: ~
   ExtraData:
     {}
   AssetDataMap:
-    JavaScriptAsset: !<own> 7d60cbef-9bb2-4b46-8177-10e70aadb5a4
+    JavaScriptAsset: !<own> 1f6f95d6-06af-427f-90c3-33acb4d539cc
   DependentFiles:
     []
   ImporterSettings: !<AssetImporterSettings>
     {}
   CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
-- !<ScriptAssetData/7d60cbef-9bb2-4b46-8177-10e70aadb5a4>
+- !<ScriptAssetData/1f6f95d6-06af-427f-90c3-33acb4d539cc>
   SvgIcon: ""
   SetupScript:
     code: ""
@@ -22,15 +22,14 @@
   VersionMajor: 0
   VersionMinor: 0
   VersionPatch: 0
-  ComponentUid: 2c0bdfab-01d3-4e14-9baf-3432985f5684
+  ComponentUid: d2204fb1-fa49-4048-965d-39e9c10aa3e4
   ExportUid: 00000000-0000-0000-0000-000000000000
   PackagePolicy: CanBeUnpacked
   ScriptInputsHidden:
     choreographyManager: false
-    guideAvatar: false
-    guideOT3D: false
     scoringEngine: false
-    turnController: false
+    stateMachine: false
+    turnbased: false
     uiManager: false
   ScriptTypesHidden:
     {}
@@ -41,12 +40,11 @@
   Attachments:
     []
   DefaultScriptInputs:
-    - choreographyManager: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
+    - turnbased: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
+      stateMachine: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
+      choreographyManager: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
       scoringEngine: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
       uiManager: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
-      turnController: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
-      guideAvatar: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
-      guideOT3D: !<reference.ObjectTracking3D> 00000000-0000-0000-0000-000000000000
   ScriptTypes:
     -
       {}

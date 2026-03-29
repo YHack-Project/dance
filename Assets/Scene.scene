@@ -10,6 +10,8 @@
     - !<own> 3eaa950d-9e46-4368-8b94-5491879d65e4
     - !<own> 886afe95-e442-4bc3-85f7-3c91eb5b4f0c
     - !<own> 6b9a36ff-d125-4ae0-924f-0f71bd37d713
+    - !<own> 5dbef39c-235a-4615-8021-f847f1b99e26
+    - !<own> 22481f53-304e-46e7-995c-4de5df66ef32
   layers: !<Layers/267ee9a7-aff2-4f9d-9a49-f71214747d03>
     userLayers:
       - id: 13
@@ -515,6 +517,21 @@
     - !<own> bc666220-8684-4fb1-a6cf-154d9c18695a
   Components:
     []
+- !<SceneObject/22481f53-304e-46e7-995c-4de5df66ef32>
+  PrefabRemaps:
+    []
+  Name: Turn Controller
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> e21b53e8-fad4-439a-8ac8-744ce0390833
 - !<SceneObject/270aedb6-f820-4c53-a4ae-3cc026ef35c9>
   PrefabRemaps:
     []
@@ -1508,6 +1525,21 @@
     - !<own> 8ff13cc8-94cf-45cc-b1b5-af4d54b8b6a6
   Components:
     []
+- !<SceneObject/5dbef39c-235a-4615-8021-f847f1b99e26>
+  PrefabRemaps:
+    []
+  Name: Turn Based
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 60665292-49ac-4d0c-ba8a-f08e8ff6bf94
 - !<SceneObject/5ec8020e-f128-432e-880c-72d3cf3c1adc>
   PrefabRemaps:
     []
@@ -1540,6 +1572,104 @@
     - !<own> f91fa355-0b37-4178-889a-14e5b7fe9ee7
   Components:
     []
+- !<ScriptComponent/60665292-49ac-4d0c-ba8a-f08e8ff6bf94>
+  PrefabRemaps:
+    []
+  Name: Turn Based
+  Enabled: true
+  ScriptAsset: !<reference> 2485c892-b1f1-4924-9453-ce440bd2cdfb
+  ScriptInputsDefault:
+    requireTurnSubmission: true
+    allowChangingTurnVariablesAfterTurnSubmission: true
+    useTurnLimit: true
+    turnLimitInput: true
+    useTurnHistory: true
+    turnsSavedLimitInput: true
+    autoRestoreTurn: true
+    tappableAreasInput: true
+    user1FlowObjectsInputSO: true
+    user2FlowObjectsInputSO: true
+    gameOverObjectsInputSO: true
+    debugMode: true
+    swapPlayersAfterSimulatedTurn: true
+    debugTappedKeySimulateTurn: true
+    debugTurnCount: true
+    debugTappedKeySingleTurn: true
+    testDataType: true
+    debugIsTurnComplete: true
+    debugIsTurnRestoredFromCache: true
+    debugAssociatedDataStudioInputs: true
+    debugTurnHistoryStudioInputs: true
+    debugAssociatedDataString: true
+    debugTurnHistoryStrings: true
+    _onTurnStartResponses: true
+    _onTurnEndResponses: true
+    _onGameOverResponses: true
+    printLogsInput: true
+    loggerConfig: true
+    showDebugView: true
+    _advancedOptions: true
+    defaultTurnVariables: true
+    remoteServiceModule: true
+    autoCaptureHelper: true
+  ScriptTypesDefault:
+    {}
+  ScriptInputs:
+    "":
+      requireTurnSubmission: true
+      allowChangingTurnVariablesAfterTurnSubmission: false
+      useTurnLimit: false
+      turnLimitInput: 2
+      useTurnHistory: false
+      turnsSavedLimitInput: 0
+      autoRestoreTurn: false
+      tappableAreasInput:
+        []
+      user1FlowObjectsInputSO: !<reference.SceneObject[]>
+        []
+      user2FlowObjectsInputSO: !<reference.SceneObject[]>
+        []
+      gameOverObjectsInputSO: !<reference.SceneObject[]>
+        []
+      debugMode: Simulate Turns
+      swapPlayersAfterSimulatedTurn: true
+      debugTappedKeySimulateTurn: ""
+      debugTurnCount: 0
+      debugTappedKeySingleTurn: ""
+      testDataType: Studio Inputs
+      debugIsTurnComplete: false
+      debugIsTurnRestoredFromCache: false
+      debugAssociatedDataStudioInputs:
+        []
+      debugTurnHistoryStudioInputs:
+        - variables:
+            []
+          isTurnComplete: false
+      debugAssociatedDataString: '{"key1": "value1", "key2":0}'
+      debugTurnHistoryStrings:
+        []
+      _onTurnStartResponses:
+        []
+      _onTurnEndResponses:
+        []
+      _onGameOverResponses:
+        []
+      printLogsInput: false
+      loggerConfig:
+        printOnScreen: false
+        fontSize: !<float> 12.000000
+        printErrors: true
+        printWarnings: true
+        printInfoLogs: false
+      showDebugView: false
+      _advancedOptions: false
+      defaultTurnVariables:
+        []
+      remoteServiceModule: !<reference.RemoteServiceModule> 53134e89-9460-4d35-b990-7708cd763b62
+      autoCaptureHelper: !<reference.ScriptAsset> f6c679e6-a4e6-4760-86bb-4836099db786
+  ScriptTypes:
+    "":
+      {}
 - !<ScriptComponent/614a60e7-f7f0-41b0-9a86-c7086eb5c5f8>
   PrefabRemaps:
     []
@@ -2969,6 +3099,7 @@
       choreographyManager: !<reference.ScriptComponent> d9afa145-6d2b-48d6-bea9-239c2e2ab299
       scoringEngine: !<reference.ScriptComponent> 150b12af-fed4-4fc5-af29-fe5efb754e81
       uiManager: !<reference.ScriptComponent> 7065f5f4-6ef2-46f3-b4fd-5f9bfa6224cf
+      turnController: !<reference.ScriptComponent> e21b53e8-fad4-439a-8ac8-744ce0390833
       guideAvatar: !<reference.SceneObject> 2eacbfdf-86cd-4934-bc0a-80710f7292ee
       guideOT3D: !<reference.ObjectTracking3D> b15aef4b-b7e5-4162-a31b-302d2b2625b8
   ScriptTypes:
@@ -3432,6 +3563,26 @@
     bottom: 0.000000
     right: 0.000000
     top: 0.000000
+- !<ScriptComponent/e21b53e8-fad4-439a-8ac8-744ce0390833>
+  PrefabRemaps:
+    []
+  Name: TurnController
+  Enabled: true
+  ScriptAsset: !<reference> 49e0ad58-cda8-46ec-90e5-3c5d0fa8f4a1
+  ScriptInputsDefault:
+    {}
+  ScriptTypesDefault:
+    {}
+  ScriptInputs:
+    "":
+      turnbased: !<reference.ScriptComponent> 60665292-49ac-4d0c-ba8a-f08e8ff6bf94
+      stateMachine: !<reference.ScriptComponent> bda9b1bb-e148-460c-b9ee-f4ff373a290c
+      choreographyManager: !<reference.ScriptComponent> d9afa145-6d2b-48d6-bea9-239c2e2ab299
+      scoringEngine: !<reference.ScriptComponent> 150b12af-fed4-4fc5-af29-fe5efb754e81
+      uiManager: !<reference.ScriptComponent> 7065f5f4-6ef2-46f3-b4fd-5f9bfa6224cf
+  ScriptTypes:
+    "":
+      {}
 - !<SceneObject/e37be744-8856-46c5-bb58-cff0ce12eb00>
   PrefabRemaps:
     []

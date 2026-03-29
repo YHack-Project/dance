@@ -19,6 +19,13 @@ script.showIdle = function () {
     setCombo("");
 };
 
+script.showWaiting = function () {
+    setPrompt("Loading...");
+    setScore("");
+    setRating("");
+    setCombo("");
+};
+
 script.showVideoLoading = function () {
     setPrompt("Select a video...");
     setScore("");
@@ -47,6 +54,36 @@ script.showDancing = function () {
 script.showResults = function (finalScore) {
     var stars = getStarRating(finalScore);
     setPrompt(stars + "\n" + finalScore + "\n\nTap to Retry");
+    setScore("");
+    setRating("");
+    setCombo("");
+};
+
+script.showResultsWithShare = function (finalScore) {
+    var stars = getStarRating(finalScore);
+    setPrompt(stars + "\n" + finalScore + "\nTap to continue");
+    setScore("");
+    setRating("");
+    setCombo("");
+};
+
+script.showChallengePrompt = function (opponentScore) {
+    setPrompt("Beat " + opponentScore + "!");
+    setScore("");
+    setRating("");
+    setCombo("");
+};
+
+script.showSharePrompt = function () {
+    setPrompt("Tap to challenge\na friend!");
+    setScore("");
+    setRating("");
+    setCombo("");
+};
+
+script.showMultiplayerResults = function (myScore, theirScore, iWon) {
+    var result = iWon ? "YOU WIN!" : (myScore === theirScore ? "TIE!" : "YOU LOSE!");
+    setPrompt(result + "\nYou: " + myScore + "\nThem: " + theirScore);
     setScore("");
     setRating("");
     setCombo("");

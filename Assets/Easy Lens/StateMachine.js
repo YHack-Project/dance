@@ -4,6 +4,7 @@
 //@input Component.ScriptComponent choreographyManager
 //@input Component.ScriptComponent scoringEngine
 //@input Component.ScriptComponent uiManager
+//@input Component.ScriptComponent turnController {"label": "Turn Controller"}
 //@input SceneObject guideAvatar {"label": "Guide Avatar Root"}
 //@input Component.ObjectTracking3D guideOT3D {"label": "Guide Avatar OT3D"}
 
@@ -12,7 +13,9 @@ var State = {
     COUNTDOWN: 1,
     DANCING: 2,
     RESULTS: 3,
-    VIDEO_LOADING: 4
+    VIDEO_LOADING: 4,
+    CHALLENGE_PROMPT: 5,
+    WAITING: 6
 };
 
 var currentState = State.IDLE;
@@ -23,6 +26,11 @@ var videoLoadTimeout = 60.0;
 var videoLoadTimer = 0.0;
 var savedTrackingAsset = null; // saved OT3D asset to restore after dance
 var videoStartedEarly = false;
+var challengeMode = false;     // true when dancing a received challenge
+var challengeOpponentScore = 0;
+var challengePromptTimer = 0;
+var resultsPhase = 0;          // 0 = showing score, 1 = showing "challenge?" prompt
+var waitingTimer = 0;
 
 script.getState = function () {
     return currentState;
@@ -69,19 +77,72 @@ function enterState(newState) {
         case State.RESULTS:
             script.choreographyManager.stopPlayback();
             var finalScore = script.scoringEngine.getFinalScore();
-            script.uiManager.showResults(finalScore);
+            if (challengeMode) {
+                // Player 2 finished — show comparison
+                var iWon = finalScore >= challengeOpponentScore;
+                script.uiManager.showMultiplayerResults(finalScore, challengeOpponentScore, iWon);
+                // End the turn-based game
+                if (script.turnController) {
+                    script.turnController.endChallenge(finalScore);
+                }
+                challengeMode = false;
+            } else {
+                resultsPhase = 0;
+                script.uiManager.showResultsWithShare(finalScore);
+            }
+            break;
+
+        case State.CHALLENGE_PROMPT:
+            challengePromptTimer = 2.5;
+            script.uiManager.showChallengePrompt(challengeOpponentScore);
+            break;
+
+        case State.WAITING:
+            waitingTimer = 5.0;
+            script.uiManager.showWaiting();
             break;
     }
 }
 
-// Tap to start / restart
+// Called by TurnController when it's turn 0 (no challenge — normal solo play)
+script.startSolo = function () {
+    enterState(State.IDLE);
+};
+
+// Called by TurnController when a challenge is received
+script.startChallenge = function (oppScore) {
+    challengeMode = true;
+    challengeOpponentScore = oppScore;
+    enterState(State.CHALLENGE_PROMPT);
+};
+
+// Tap to start / restart / send challenge
 var tapEvent = script.createEvent("TapEvent");
 tapEvent.bind(function () {
-    if (currentState === State.IDLE || currentState === State.RESULTS) {
+    if (currentState === State.IDLE) {
         videoStartedEarly = false;
+        challengeMode = false;
         script.choreographyManager.resetToKeyframeMode();
         script.choreographyManager.initVideoMode();
         enterState(State.VIDEO_LOADING);
+    } else if (currentState === State.RESULTS) {
+        if (challengeMode) {
+            // Player 2 finished — tap to dismiss
+            videoStartedEarly = false;
+            challengeMode = false;
+            enterState(State.IDLE);
+        } else if (resultsPhase === 0) {
+            // First tap: show challenge/retry options
+            resultsPhase = 1;
+            script.uiManager.showSharePrompt();
+        } else if (resultsPhase === 1) {
+            // Second tap: send the challenge
+            if (script.turnController) {
+                script.turnController.sendChallenge();
+            }
+            resultsPhase = 0;
+            enterState(State.IDLE);
+        }
     }
 });
 
@@ -141,11 +202,38 @@ updateEvent.bind(function (eventData) {
                 enterState(State.RESULTS);
             }
             break;
+
+        case State.CHALLENGE_PROMPT:
+            challengePromptTimer -= dt;
+            if (challengePromptTimer <= 0) {
+                enterState(State.COUNTDOWN);
+            }
+            break;
+
+        case State.WAITING:
+            waitingTimer -= dt;
+            if (waitingTimer <= 0) {
+                print("StateMachine: WAITING timed out, falling back to IDLE");
+                enterState(State.IDLE);
+            }
+            break;
     }
 });
+
+// Called by UI when user wants to challenge a friend
+script.challengeFriend = function () {
+    if (script.turnController) {
+        script.turnController.sendChallenge();
+    }
+};
 
 // Initialize
 var startEvent = script.createEvent("OnStartEvent");
 startEvent.bind(function () {
-    enterState(State.IDLE);
+    if (script.turnController) {
+        // Wait for TurnController to determine if this is a challenge or solo
+        enterState(State.WAITING);
+    } else {
+        enterState(State.IDLE);
+    }
 });
