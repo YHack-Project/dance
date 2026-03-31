@@ -328,10 +328,11 @@ function startVideoPreview() {
     try {
         var vc = script.mediaPickerTexture.control.videoControl;
         if (vc) {
+            vc.stop();
             vc.volume = 1;
-            vc.play(-1);
             vc.seek(0);
-            print("CHOREO: Video preview started, duration=" + (vc.duration || 0).toFixed(1) + "s");
+            vc.play(-1);
+            print("CHOREO: Video preview started, duration=" + (vc.duration || 0).toFixed(1) + "s, volume=1");
         }
     } catch (e) {
         print("CHOREO: Video preview error: " + e);
