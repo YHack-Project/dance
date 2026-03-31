@@ -1,0 +1,56 @@
+- !<AssetImportMetadata/3a3bb07a-7248-4630-bf08-43e8b57e3c9f>
+  ImportedAssetIds:
+    JavaScriptAsset: !<reference> 7de1e3ca-bd93-4278-96d2-7a53bf08f564
+  ImporterName: JavaScriptAssetImporter
+  PrimaryAsset: !<reference> 7de1e3ca-bd93-4278-96d2-7a53bf08f564
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    JavaScriptAsset: !<own> 4db4b98e-d97b-479c-ba3b-8db345f6805d
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<ScriptAssetData/4db4b98e-d97b-479c-ba3b-8db345f6805d>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  ComponentUid: 9d93dd3c-20a8-42cb-b307-8232184ae1fb
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    choreographyManager: false
+    presetContainer: false
+    presetVideo1: false
+    presetVideo2: false
+    stateMachine: false
+    thumbnail1: false
+    thumbnail2: false
+    uploadButton: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - stateMachine: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
+      choreographyManager: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
+      presetVideo1: !<reference.Texture> 00000000-0000-0000-0000-000000000000
+      presetVideo2: !<reference.Texture> 00000000-0000-0000-0000-000000000000
+      thumbnail1: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      thumbnail2: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      presetContainer: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      uploadButton: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+  ScriptTypes:
+    -
+      {}

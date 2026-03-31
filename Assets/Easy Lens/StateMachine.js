@@ -5,6 +5,7 @@
 //@input Component.ScriptComponent scoringEngine
 //@input Component.ScriptComponent uiManager
 //@input Component.ScriptComponent turnController {"label": "Turn Controller"}
+//@input Component.ScriptComponent presetManager {"label": "Preset Manager"}
 //@input SceneObject guideAvatar {"label": "Guide Avatar Root"}
 //@input Component.ObjectTracking3D guideOT3D {"label": "Guide Avatar OT3D"}
 
@@ -46,6 +47,11 @@ script.getDanceTimer = function () {
 function enterState(newState) {
     currentState = newState;
 
+    // Hide preset UI when leaving IDLE
+    if (newState !== State.IDLE && script.presetManager) {
+        script.presetManager.hidePresetUI();
+    }
+
     // Show guide avatar during countdown (so OT3D can position it) and dance
     if (script.guideAvatar) {
         script.guideAvatar.enabled = (newState === State.COUNTDOWN || newState === State.DANCING);
@@ -54,6 +60,7 @@ function enterState(newState) {
     switch (newState) {
         case State.IDLE:
             script.uiManager.showIdle();
+            if (script.presetManager) script.presetManager.showPresetUI();
             break;
 
         case State.VIDEO_LOADING:
@@ -133,10 +140,29 @@ script.startChallenge = function (oppScore) {
     enterState(State.CHALLENGE_PROMPT);
 };
 
-// Tap to start / restart / send challenge
+// Called by PresetManager when user taps a preset thumbnail
+script.enterPresetLoading = function () {
+    videoStartedEarly = false;
+    challengeMode = false;
+    enterState(State.VIDEO_LOADING);
+};
+
+// Called by PresetManager when user taps "Upload your own"
+script.startVideoUpload = function () {
+    videoStartedEarly = false;
+    challengeMode = false;
+    script.choreographyManager.resetToKeyframeMode();
+    script.choreographyManager.initVideoMode();
+    enterState(State.VIDEO_LOADING);
+};
+
+// Tap to restart / send challenge (IDLE upload is now handled by PresetManager)
 var tapEvent = script.createEvent("TapEvent");
 tapEvent.bind(function () {
     if (currentState === State.IDLE) {
+        // SALSA/HIPHOP InteractionComponents fire first and change state to VIDEO_LOADING,
+        // so a tap on those won't reach here while still in IDLE.
+        // Any other tap in IDLE triggers upload.
         videoStartedEarly = false;
         challengeMode = false;
         script.choreographyManager.resetToKeyframeMode();
@@ -172,8 +198,12 @@ updateEvent.bind(function (eventData) {
         case State.VIDEO_LOADING:
             videoLoadTimer += dt;
 
-            // Poll for video readiness (handles cases where onPlaybackReady doesn't fire)
-            script.choreographyManager.pollVideoReady();
+            // Poll for video readiness (preset or uploaded)
+            if (script.choreographyManager.isPresetMode()) {
+                script.choreographyManager.pollPresetVideoReady();
+            } else {
+                script.choreographyManager.pollVideoReady();
+            }
 
             // Drive pose recording from video
             if (script.choreographyManager.isRecording()) {

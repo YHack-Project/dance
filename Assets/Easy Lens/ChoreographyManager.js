@@ -53,6 +53,10 @@ var recordingFailed = false;
 // Video preview state
 var videoPreviewStarted = false;
 
+// Preset video state
+var presetMode = false;         // true when using a bundled preset video
+var presetVideoTexture = null;  // the preset Asset.Texture (VideoTextureProvider)
+
 
 // ============================================================
 // DANCE DATA
@@ -133,9 +137,14 @@ function captureCurrentVideoFrame() {
 function finishRecording() {
     recording = false;
 
-    // Stop video
+    // Stop video (preset or media picker)
     try {
-        var vc = script.mediaPickerTexture.control.videoControl;
+        var vc;
+        if (presetMode && presetVideoTexture) {
+            vc = presetVideoTexture.control;
+        } else if (script.mediaPickerTexture) {
+            vc = script.mediaPickerTexture.control.videoControl;
+        }
         if (vc) vc.pause();
     } catch (e) {}
 
@@ -303,8 +312,87 @@ script.resetToKeyframeMode = function () {
     videoPicked = false;
     expectingPick = false;
     videoPreviewStarted = false;
+    presetMode = false;
+    presetVideoTexture = null;
     if (script.videoPreview) script.videoPreview.enabled = false;
+    // Restore tracking scope to MediaPickerTexture
+    if (script.videoTrackingScope && script.mediaPickerTexture) {
+        script.videoTrackingScope.texture = script.mediaPickerTexture;
+    }
 };
+
+// ============================================================
+// PRESET VIDEO MODE
+// ============================================================
+script.startPresetVideo = function (videoTexture) {
+    if (!videoTexture) {
+        print("CHOREO: ERROR - No preset video texture provided");
+        return;
+    }
+
+    videoMode = true;
+    presetMode = true;
+    videoReady = false;
+    recording = false;
+    recordedPoses = [];
+    activeDance = null;
+    recordingFailed = false;
+    videoPicked = false;
+    presetVideoTexture = videoTexture;
+
+    // Swap the tracking scope to read from the preset video instead of MediaPicker
+    if (script.videoTrackingScope) {
+        script.videoTrackingScope.texture = videoTexture;
+        print("CHOREO: Tracking scope texture swapped to preset video");
+    }
+
+    // Start playing the preset video silently for body tracking extraction
+    var vc = videoTexture.control;
+    if (vc) {
+        vc.volume = 0;
+        vc.play(1);
+        print("CHOREO: Preset video playing for pose extraction");
+    }
+
+    // Mark as picked so pollVideoReady will start recording once duration is available
+    videoPicked = true;
+};
+
+// Poll for preset video readiness (same as regular but uses preset texture)
+script.pollPresetVideoReady = function () {
+    if (!presetMode || !presetVideoTexture || recording || videoReady || recordingFailed) return;
+    try {
+        var vc = presetVideoTexture.control;
+        if (vc && vc.duration > 0) {
+            print("CHOREO: Preset video ready (duration=" + vc.duration.toFixed(1) + "s), starting recording");
+            startRecordingFromPreset();
+        }
+    } catch (e) {}
+};
+
+function startRecordingFromPreset() {
+    var vc = presetVideoTexture.control;
+    if (!vc) {
+        print("CHOREO: No videoControl on preset texture, aborting");
+        videoMode = false;
+        presetMode = false;
+        return;
+    }
+
+    videoDuration = vc.duration;
+    print("CHOREO: Preset video duration=" + videoDuration.toFixed(1) + "s, starting recording");
+
+    recording = true;
+    recordTime = 0.0;
+    lastRecordSample = 0.0;
+    recordedPoses = [];
+    recordingProgress = 0.0;
+
+    vc.seek(0);
+    try { vc.play(1); } catch (e) {}
+}
+
+script.isPresetMode = function () { return presetMode; };
 
 // ============================================================
 // PUBLIC API
@@ -322,17 +410,21 @@ script.getCheckpoints = function () {
 // Start video playback and show preview (called early during countdown)
 function startVideoPreview() {
     if (videoPreviewStarted) return;
-    if (!videoMode || !script.mediaPickerTexture) return;
+    if (!videoMode) return;
     videoPreviewStarted = true;
 
+    // Choose the right texture source: preset video or media picker
+    var previewTex = presetMode ? presetVideoTexture : script.mediaPickerTexture;
+    if (!previewTex) return;
+
     try {
-        var vc = script.mediaPickerTexture.control.videoControl;
+        var vc = presetMode ? previewTex.control : previewTex.control.videoControl;
         if (vc) {
             vc.stop();
             vc.volume = 1;
             vc.seek(0);
             vc.play(-1);
-            print("CHOREO: Video preview started, duration=" + (vc.duration || 0).toFixed(1) + "s, volume=1");
+            print("CHOREO: Video preview started (preset=" + presetMode + "), duration=" + (vc.duration || 0).toFixed(1) + "s, volume=1");
         }
     } catch (e) {
         print("CHOREO: Video preview error: " + e);
@@ -342,7 +434,7 @@ function startVideoPreview() {
         script.videoPreview.enabled = true;
         var img = script.videoPreview.getComponent("Component.Image");
         if (img && img.mainPass) {
-            img.mainPass.baseTex = script.mediaPickerTexture;
+            img.mainPass.baseTex = previewTex;
         }
     }
 }
@@ -419,9 +511,14 @@ script.startPlayback = function () {
 
 script.stopPlayback = function () {
     playing = false;
-    if (videoMode && script.mediaPickerTexture) {
+    if (videoMode) {
         try {
-            var vc = script.mediaPickerTexture.control.videoControl;
+            var vc;
+            if (presetMode && presetVideoTexture) {
+                vc = presetVideoTexture.control;
+            } else if (script.mediaPickerTexture) {
+                vc = script.mediaPickerTexture.control.videoControl;
+            }
             if (vc) vc.pause();
         } catch (e) {}
         if (script.videoPreview) script.videoPreview.enabled = false;

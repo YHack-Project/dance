@@ -13,7 +13,7 @@ var RATING_DISPLAY_TIME = 0.8;
 // STATE DISPLAY
 // ============================================================
 script.showIdle = function () {
-    setPrompt("Tap to Upload");
+    setPrompt("Upload your own dance\n\nOr try one of these");
     setScore("");
     setRating("");
     setCombo("");
