@@ -80,6 +80,7 @@ function enterState(newState) {
         case State.RESULTS:
             script.choreographyManager.stopPlayback();
             var finalScore = script.scoringEngine.getFinalScore();
+            var cpCount = script.scoringEngine.getCheckpointCount();
             if (challengeMode) {
                 // Player 2 finished — show comparison
                 var iWon = finalScore >= challengeOpponentScore;
@@ -91,7 +92,7 @@ function enterState(newState) {
                 challengeMode = false;
             } else {
                 resultsPhase = 0;
-                script.uiManager.showResultsWithShare(finalScore);
+                script.uiManager.showResultsWithShare(finalScore, cpCount);
             }
             break;
 

@@ -51,16 +51,16 @@ script.showDancing = function () {
     setCombo("");
 };
 
-script.showResults = function (finalScore) {
-    var stars = getStarRating(finalScore);
+script.showResults = function (finalScore, checkpointCount) {
+    var stars = getStarRating(finalScore, checkpointCount);
     setPrompt(stars + "\n" + finalScore + "\n\nTap to Retry");
     setScore("");
     setRating("");
     setCombo("");
 };
 
-script.showResultsWithShare = function (finalScore) {
-    var stars = getStarRating(finalScore);
+script.showResultsWithShare = function (finalScore, checkpointCount) {
+    var stars = getStarRating(finalScore, checkpointCount);
     setPrompt(stars + "\n" + finalScore + "\nTap to continue");
     setScore("");
     setRating("");
@@ -142,11 +142,13 @@ function setCombo(txt) {
     if (script.comboText) script.comboText.text = txt;
 }
 
-function getStarRating(score) {
-    if (score >= 1800) return "\u2B50\u2B50\u2B50\u2B50\u2B50";
-    if (score >= 1400) return "\u2B50\u2B50\u2B50\u2B50";
-    if (score >= 1000) return "\u2B50\u2B50\u2B50";
-    if (score >= 600) return "\u2B50\u2B50";
+function getStarRating(score, checkpointCount) {
+    var n = checkpointCount || 10;
+    var max = 300 * n;
+    if (score >= max * 0.8) return "\u2B50\u2B50\u2B50\u2B50\u2B50";
+    if (score >= max * 0.6) return "\u2B50\u2B50\u2B50\u2B50";
+    if (score >= max * 0.4) return "\u2B50\u2B50\u2B50";
+    if (score >= max * 0.2) return "\u2B50\u2B50";
     return "\u2B50";
 }
 

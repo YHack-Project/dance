@@ -13,7 +13,7 @@ metaInfo:
     []
   tags:
     []
-  lensName: Mood Label Live
+  lensName: SnapDance
   lensDescriptors:
     []
   lensApplicableContext:
@@ -27,7 +27,7 @@ metaInfo:
     - Mobile
     - Web
   platformBundlesEnabled: false
-  iconHash: d1f877e9d4c5c0f1ad195868742d0870
+  iconHash: afca46a8afe555988d09c4c9e583c034
   videoPreviewHash: ""
   fromTemplateName: Default
   fromTemplateUrl: Lens Studio 5.19.2.26031623

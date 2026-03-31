@@ -26,10 +26,10 @@ var JOINT_WEIGHTS = {
 };
 
 // Rating thresholds (applied to angular-distance-based score)
-var PERFECT_THRESHOLD = 0.97;
-var GREAT_THRESHOLD = 0.94;
-var GOOD_THRESHOLD = 0.90;
-var OK_THRESHOLD = 0.83;
+var PERFECT_THRESHOLD = 0.98;
+var GREAT_THRESHOLD = 0.95;
+var GOOD_THRESHOLD = 0.92;
+var OK_THRESHOLD = 0.85;
 
 // Minimum quaternion dot product vs identity to consider a joint "active"
 var ACTIVE_JOINT_THRESHOLD = 0.995;
@@ -211,6 +211,10 @@ script.reset = function () {
 
 script.getFinalScore = function () {
     return totalScore;
+};
+
+script.getCheckpointCount = function () {
+    return script.choreographyManager.getCheckpoints().length;
 };
 
 script.update = function () {
