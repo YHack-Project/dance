@@ -1921,7 +1921,7 @@
     left: 0.750000
     bottom: -0.970000
     right: 0.970000
-    top: -0.750000
+    top: -0.350000
   Offset:
     left: 0.000000
     bottom: 0.000000
@@ -3147,7 +3147,14 @@
   MeshShadowMode: None
   ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
   ShadowDensity: 1.000000
-  Text: "-- CREDITS --\\n\\nSALSA\\nVideo: Diego Rivera\\nCC BY 3.0\\nMusic: Pixabay\\n\\nHIP HOP\\nVideo: The Dance Mafia\\nCC BY 3.0\\nMusic: Pixabay\\n\\n[tap to close]"
+  Text: |-
+    -- CREDITS --
+    SALSA
+    Video: Diego Rivera CC BY 3.0
+    Music: Pixabay
+    HIP HOP
+    Video: The Dance Mafia CC BY 3.0
+    Music: Pixabay [tap to close]
   Editable: false
   ShowEditingPreview: true
   TouchHandler: !<reference> 00000000-0000-0000-0000-000000000000
@@ -3196,7 +3203,7 @@
     OffsetX: 0.250000
     OffsetY: 0.250000
   Background: !<BackgroundSettings>
-    Enabled: false
+    Enabled: true
     Fill: !<TextFill>
       Mode: Solid
       Color: {x: 0.000000, y: 0.000000, z: 0.000000, w: 1.000000}

@@ -169,11 +169,12 @@ function setCombo(txt) {
 
 function getStarRating(score, checkpointCount) {
     var n = checkpointCount || 10;
-    var max = 300 * n;
-    if (score >= max * 0.8) return "\u2B50\u2B50\u2B50\u2B50\u2B50";
-    if (score >= max * 0.6) return "\u2B50\u2B50\u2B50\u2B50";
-    if (score >= max * 0.4) return "\u2B50\u2B50\u2B50";
-    if (score >= max * 0.2) return "\u2B50\u2B50";
+    var comboFactor = 1.0 + 0.2 * (Math.min(n, 20) / 20);
+    var max = 300 * n * comboFactor;
+    if (score >= max * 0.55) return "\u2B50\u2B50\u2B50\u2B50\u2B50";
+    if (score >= max * 0.40) return "\u2B50\u2B50\u2B50\u2B50";
+    if (score >= max * 0.25) return "\u2B50\u2B50\u2B50";
+    if (score >= max * 0.12) return "\u2B50\u2B50";
     return "\u2B50";
 }
 

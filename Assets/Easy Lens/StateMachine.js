@@ -231,8 +231,8 @@ updateEvent.bind(function (eventData) {
             var display = Math.ceil(countdownTimer);
             if (display < 1) display = 1;
             script.uiManager.showCountdown(display);
-            // Start video 0.5s before dance so user sees it as reference
-            if (countdownTimer <= 0.5 && !videoStartedEarly) {
+            // Start video 0.3s before dance so user sees it as reference
+            if (countdownTimer <= 0.3 && !videoStartedEarly) {
                 videoStartedEarly = true;
                 script.choreographyManager.startVideoPreview();
             }

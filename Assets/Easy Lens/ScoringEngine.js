@@ -26,10 +26,10 @@ var JOINT_WEIGHTS = {
 };
 
 // Rating thresholds (applied to angular-distance-based score)
-var PERFECT_THRESHOLD = 0.98;
-var GREAT_THRESHOLD = 0.95;
-var GOOD_THRESHOLD = 0.92;
-var OK_THRESHOLD = 0.85;
+var PERFECT_THRESHOLD = 0.990;
+var GREAT_THRESHOLD = 0.978;
+var GOOD_THRESHOLD = 0.963;
+var OK_THRESHOLD = 0.945;
 
 // Minimum quaternion dot product vs identity to consider a joint "active"
 var ACTIVE_JOINT_THRESHOLD = 0.995;
@@ -88,11 +88,13 @@ function isNearIdentity(q) {
 
 // Get weighted average similarity across ACTIVE joints
 // prevGuidePose: guide rotations at the previous checkpoint (null for first checkpoint)
-function computePoseSimilarity(userPose, guidePose, prevGuidePose) {
+// debugOut: optional array — if provided, per-joint {name, weight, sim} entries are pushed into it
+function computePoseSimilarity(userPose, guidePose, prevGuidePose, debugOut) {
     if (!userPose || !guidePose) return 0;
 
     var totalWeight = 0;
     var weightedScore = 0;
+    var skippedCount = 0;
 
     for (var i = 0; i < JOINT_NAMES.length; i++) {
         var name = JOINT_NAMES[i];
@@ -100,6 +102,7 @@ function computePoseSimilarity(userPose, guidePose, prevGuidePose) {
 
         if (guidePose[name]) {
             if (isNearIdentity(guidePose[name])) {
+                skippedCount++;
                 continue;
             }
 
@@ -116,7 +119,15 @@ function computePoseSimilarity(userPose, guidePose, prevGuidePose) {
             }
             weightedScore += sim * weight;
             totalWeight += weight;
+
+            if (debugOut) {
+                debugOut.push({ name: name, weight: weight, sim: sim });
+            }
         }
+    }
+
+    if (debugOut) {
+        debugOut._skipped = skippedCount;
     }
 
     if (totalWeight === 0) return 0;
@@ -234,6 +245,16 @@ script.update = function () {
 
         if (currentTime >= checkpoints[i] - 0.10 && currentTime <= checkpoints[i] + 0.10) {
             lastCheckpointIndex = i;
+
+            // Recompute with debug info for logging
+            var debugJoints = [];
+            var debugSim = computePoseSimilarity(userPose, guideRotations, lastCheckpointRotations, debugJoints);
+            debugJoints.sort(function (a, b) { return b.weight - a.weight; });
+            var topJoints = debugJoints.slice(0, 6);
+            var jointStr = topJoints.map(function (j) {
+                return j.name + "(w=" + j.weight.toFixed(2) + " s=" + j.sim.toFixed(3) + ")";
+            }).join(" | ");
+            print("[CP " + (i + 1) + "/" + checkpoints.length + " t=" + checkpoints[i].toFixed(1) + "s] sim=" + frameScoreSmooth.toFixed(3) + " | " + jointStr + " | active=" + debugJoints.length + " skipped=" + (debugJoints._skipped || 0));
 
             var rating = getRating(frameScoreSmooth);
             var points = getPointsForRating(rating);
