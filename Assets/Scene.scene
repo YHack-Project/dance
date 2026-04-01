@@ -2471,7 +2471,7 @@
   ForceBasic: true
   Anchor:
     left: -1.000000
-    bottom: -1.500000
+    bottom: -1.600000
     right: 1.000000
     top: 1.000000
   Offset:

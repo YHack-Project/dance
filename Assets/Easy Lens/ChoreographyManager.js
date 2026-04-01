@@ -421,9 +421,9 @@ function startVideoPreview() {
         var vc = presetMode ? previewTex.control : previewTex.control.videoControl;
         if (vc) {
             vc.stop();
-            vc.volume = 1;
             vc.seek(0);
             vc.play(-1);
+            vc.volume = 1;
             print("CHOREO: Video preview started (preset=" + presetMode + "), duration=" + (vc.duration || 0).toFixed(1) + "s, volume=1");
         }
     } catch (e) {
