@@ -159,6 +159,7 @@ script.startVideoUpload = function () {
 // Tap to restart / send challenge (IDLE upload is now handled by PresetManager)
 var tapEvent = script.createEvent("TapEvent");
 tapEvent.bind(function () {
+    if (script.uiManager.isCreditsOpen && script.uiManager.isCreditsOpen()) return;
     if (currentState === State.IDLE) {
         // SALSA/HIPHOP InteractionComponents fire first and change state to VIDEO_LOADING,
         // so a tap on those won't reach here while still in IDLE.

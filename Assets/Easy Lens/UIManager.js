@@ -5,6 +5,7 @@
 //@input Component.Text ratingText {"label": "Rating Flash Text"}
 //@input Component.Text promptText {"label": "Prompt/Countdown Text"}
 //@input Component.Text comboText {"label": "Combo Text"}
+//@input Component.ScriptComponent creditsManager {"label": "Credits Manager"}
 
 var ratingTimer = 0;
 var RATING_DISPLAY_TIME = 0.8;
@@ -17,6 +18,7 @@ script.showIdle = function () {
     setScore("");
     setRating("");
     setCombo("");
+    hideCreditsButton();
 };
 
 script.showWaiting = function () {
@@ -24,6 +26,7 @@ script.showWaiting = function () {
     setScore("");
     setRating("");
     setCombo("");
+    hideCreditsButton();
 };
 
 script.showVideoLoading = function () {
@@ -31,6 +34,7 @@ script.showVideoLoading = function () {
     setScore("");
     setRating("");
     setCombo("");
+    hideCreditsButton();
 };
 
 script.showRecordingProgress = function (progress) {
@@ -43,12 +47,14 @@ script.showCountdown = function (num) {
     setScore("");
     setRating("");
     setCombo("");
+    hideCreditsButton();
 };
 
 script.showDancing = function () {
     setPrompt("");
     setScore("0");
     setCombo("");
+    hideCreditsButton();
 };
 
 script.showResults = function (finalScore, checkpointCount) {
@@ -57,6 +63,7 @@ script.showResults = function (finalScore, checkpointCount) {
     setScore("");
     setRating("");
     setCombo("");
+    hideCreditsButton();
 };
 
 script.showResultsWithShare = function (finalScore, checkpointCount) {
@@ -65,6 +72,7 @@ script.showResultsWithShare = function (finalScore, checkpointCount) {
     setScore("");
     setRating("");
     setCombo("");
+    hideCreditsButton();
 };
 
 script.showChallengePrompt = function (opponentScore) {
@@ -72,6 +80,7 @@ script.showChallengePrompt = function (opponentScore) {
     setScore("");
     setRating("");
     setCombo("");
+    hideCreditsButton();
 };
 
 script.showSharePrompt = function () {
@@ -79,6 +88,7 @@ script.showSharePrompt = function () {
     setScore("");
     setRating("");
     setCombo("");
+    showCreditsButton();
 };
 
 script.showChallengeUpload = function () {
@@ -86,6 +96,7 @@ script.showChallengeUpload = function () {
     setScore("");
     setRating("");
     setCombo("");
+    hideCreditsButton();
 };
 
 script.showWrongVideo = function () {
@@ -93,6 +104,7 @@ script.showWrongVideo = function () {
     setScore("");
     setRating("");
     setCombo("");
+    hideCreditsButton();
 };
 
 script.showMultiplayerResults = function (myScore, theirScore, iWon) {
@@ -101,6 +113,7 @@ script.showMultiplayerResults = function (myScore, theirScore, iWon) {
     setScore("");
     setRating("");
     setCombo("");
+    hideCreditsButton();
 };
 
 // ============================================================
@@ -126,6 +139,18 @@ script.updateProgress = function (fraction) {
 // ============================================================
 // HELPERS
 // ============================================================
+function showCreditsButton() {
+    if (script.creditsManager) script.creditsManager.showButton();
+}
+
+function hideCreditsButton() {
+    if (script.creditsManager) script.creditsManager.hideButton();
+}
+
+script.isCreditsOpen = function () {
+    return script.creditsManager && script.creditsManager.isCreditsOpen();
+};
+
 function setPrompt(txt) {
     if (script.promptText) script.promptText.text = txt;
 }

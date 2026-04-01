@@ -27,6 +27,7 @@
   PackagePolicy: CanBeUnpacked
   ScriptInputsHidden:
     comboText: false
+    creditsManager: false
     promptText: false
     ratingText: false
     scoreText: false
@@ -43,6 +44,7 @@
       ratingText: !<reference.Text> 00000000-0000-0000-0000-000000000000
       promptText: !<reference.Text> 00000000-0000-0000-0000-000000000000
       comboText: !<reference.Text> 00000000-0000-0000-0000-000000000000
+      creditsManager: !<reference.ScriptComponent> 00000000-0000-0000-0000-000000000000
   ScriptTypes:
     -
       {}
